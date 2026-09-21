@@ -20,7 +20,7 @@ function displayMonthOnScreen(month) {
     const startDate = new Date(year, month - 1, 1);
     const numberOfDaysInMonth = new Date(year, month, 0).getDate();
 
-    // Set the start day of each week 6 = Monday
+    // Set the start day of each week
     const startDay = (startDate.getDay() + 6) % 7;
 
     let currentWeekDiv = document.createElement("div");
@@ -34,15 +34,20 @@ function displayMonthOnScreen(month) {
         
         const dayName = weekNames[i % 7];
 
+        // check if day belongs to previous month and create header.
         if (i < startDay) {
             const previousMonth = new Date(year, month-1, -1);
             const offset = previousMonth.getDate() - (startDay - i) + 2;
-            makeDayEmpty(tempDay, offset, month-1, dayName);
+            makeEmptyDay(tempDay, dayName, offset, month-1);
         } else {
             const dayNumber = i - startDay + 1;
 
-            createDayHeader(tempDay, dayNumber, month, dayName);
+            createDayHeader(tempDay, dayName, dayNumber, month);
         }
+
+        tempDay.addEventListener("click", () =>{
+            changeFocusedDay(tempDay);
+        })
 
         currentWeekDiv.append(tempDay);
 
@@ -54,31 +59,31 @@ function displayMonthOnScreen(month) {
         }
     }
 
+    // fill out the remaining days
     if (currentWeekDiv.children.length > 0) {
         const missingDays = 7 - currentWeekDiv.children.length;
         for (let i = 0; i < missingDays; i++) {
             const tempDay = document.createElement("section");
             tempDay.className = "day-section";
-            makeDayEmpty(tempDay, i+1, month+1);
+
+            const dayName = weekNames[7-missingDays+i];
+
+            makeEmptyDay(tempDay, dayName, i+1, month+1);
+
             currentWeekDiv.append(tempDay);
         }
         weekContainer.append(currentWeekDiv);
     }
 }
 
-function makeDayEmpty(dayElement, offset, month, dayName){
+function makeEmptyDay(dayElement, dayName, offset, month){
     dayElement.style.background = "#C9C9C9";
     dayElement.style.border = "1px dashed gray"
 
-    const dayHeader = document.createElement("p");
-    dayHeader.style.textAlign = "center";
-    dayHeader.style.marginTop = "5px";
-    dayHeader.textContent = `${dayName} ${offset}/${month}`;
-
-    dayElement.append(dayHeader);
+    createDayHeader(dayElement, dayName, offset, month);
 }
 
-function createDayHeader(dayElement, dayNumber, month, dayName){
+function createDayHeader(dayElement, dayName, dayNumber, month){
     const dayHeader = document.createElement("p");
     dayHeader.style.textAlign = "center";
     dayHeader.style.marginTop = "5px";
@@ -87,10 +92,13 @@ function createDayHeader(dayElement, dayNumber, month, dayName){
     dayElement.append(dayHeader);
 }
 
-
 function displayCalendarName(month){
     const calendarHeader = document.getElementById("month-name");
     calendarHeader.textContent = monthNames[month-1];
+}
+
+function changeFocusedDay(dayElement){
+    dayElement.style.background = "#3DFF6E";
 }
 
 const getCurrentMonthNumber = () => {return new Date().getMonth() +1};
