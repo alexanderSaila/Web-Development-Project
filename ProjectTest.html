@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <title>Schedule Planner</title>
+        <style>
+            .hidden {
+                display: none;
+            }
+            .section {
+                border: 2px solid black;
+                margin: 5px;
+            }
+            .section-title {
+                text-align: center;
+                margin-top: 10px;
+                margin-left: 20px;
+                margin-right: 20px;
+            }
+            .week-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .day-container{
+                display: flex;
+                flex-direction: row;
+            }
+            .day-section {
+                flex: 1;
+                min-height: 100px;
+                min-width: 100px;
+                max-width: 200px;
+                border: 1px solid black;
+                background-color: #FFCCCC;
+                margin: 2px;
+            }
+            .navigate-week {
+                min-width: 50px;
+                max-height: 25px;
+                margin-top: 10px;
+            }
+        </style>
+        <script src="ProjectJavaScript.js" defer></script>
+    </head>
+    <body>
+        <h1 class="section-title">WELCOME</h1>
+        <section id="schedule-section" class="section">
+            <div style="display: flex; justify-content: center;">
+                <button id="previous-month-button" class="navigate-week">&lt</button>
+                <h3 id="month-name" class="section-title">Schedule</h3>
+                <button id="next-month-button" class="navigate-week">&gt</button>
+            </div>
+        </section>
+        <section id="list-section" class="section">
+            <h3 class="section-title">Lists</h3>
+        </section>
+    </body>
+    <footer>
+
+    </footer>
+</html>
