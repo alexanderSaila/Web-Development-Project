@@ -1,5 +1,7 @@
 const scheduleSection = document.getElementById("schedule-section")
 
+let selectedDay = null;
+
 const weekContainer = document.createElement("div");
 weekContainer.className = "week-container";
 
@@ -42,12 +44,8 @@ function displayMonthOnScreen(month) {
         } else {
             const dayNumber = i - startDay + 1;
 
-            createDayHeader(tempDay, dayName, dayNumber, month);
+            makeRegularDay(tempDay, dayName, dayNumber, month);
         }
-
-        tempDay.addEventListener("click", () =>{
-            changeFocusedDay(tempDay);
-        })
 
         currentWeekDiv.append(tempDay);
 
@@ -83,6 +81,25 @@ function makeEmptyDay(dayElement, dayName, offset, month){
     createDayHeader(dayElement, dayName, offset, month);
 }
 
+function makeRegularDay(dayElement, dayName, dayNumber, month){
+    createDayHeader(dayElement, dayName, dayNumber, month);
+
+    dayElement.setAttribute("id", `${dayNumber}-${month}`)
+
+    // add different event listeners
+    dayElement.addEventListener("click", () =>{
+        changeFocusedDay(dayElement);
+    });
+    dayElement.addEventListener("mouseenter", () => {
+        dayElement.style.background = "#91FFB7";
+        dayElement.style.border = "1px solid green";
+    })
+    dayElement.addEventListener("mouseleave", () => {
+        dayElement.style.background = "";
+        dayElement.style.border = "";
+    })
+}
+
 function createDayHeader(dayElement, dayName, dayNumber, month){
     const dayHeader = document.createElement("p");
     dayHeader.style.textAlign = "center";
@@ -98,8 +115,23 @@ function displayCalendarName(month){
 }
 
 function changeFocusedDay(dayElement){
-    dayElement.style.background = "#3DFF6E";
+    if(selectedDay !== null){
+        selectedDay.classList.remove("selected-day");
+        selectedDay.querySelector(".add-item-button")?.remove()
+    }
+    selectedDay = dayElement;
+
+    dayElement.classList.add("selected-day");
+
+    const addButton = document.createElement("button");
+    addButton.className = "add-item-button";
+    addButton.textContent = "+";
+    
+    dayElement.append(addButton);
+    
 }
+
+
 
 const getCurrentMonthNumber = () => {return new Date().getMonth() +1};
 let selectedMonth = getCurrentMonthNumber();
