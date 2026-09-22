@@ -15,8 +15,6 @@
                 margin-left: 20px;
                 margin-right: 20px;
             }
-            .week-container {
-            }
             .day-container{
                 display: flex;
                 flex-direction: row;
@@ -34,6 +32,10 @@
             .selected-day{
                 background: #4AFF85;
             }
+            .day-header{
+                text-align: center;
+                margin-top: 5px;
+            }
             .add-item-button{
                 min-height: 20;
                 min-width: 20;
@@ -49,7 +51,7 @@
     <body>
         <h1 class="section-title">WELCOME</h1>
         <section id="schedule-section" class="section">
-            <script src="ProjectJavaScript.js" defer></script>
+            <script src="Calendar.js" defer></script>
             <div style="display: flex; justify-content: center;">
                 <button id="previous-month-button" class="navigate-week">&lt</button>
                 <h3 id="month-name" class="section-title">Schedule</h3>

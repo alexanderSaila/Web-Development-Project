@@ -102,8 +102,7 @@ function makeRegularDay(dayElement, dayName, dayNumber, month){
 
 function createDayHeader(dayElement, dayName, dayNumber, month){
     const dayHeader = document.createElement("p");
-    dayHeader.style.textAlign = "center";
-    dayHeader.style.marginTop = "5px";
+    dayHeader.classList.add("day-header");
     dayHeader.textContent = `${dayName} ${dayNumber}/${month}`;
     
     dayElement.append(dayHeader);
