@@ -60,9 +60,9 @@ class Calendar {
 
             const dayName = Calendar.weekNames[i % 7];
 
-            // check if day belongs to previous month and create header.
+            // check if day belongs to previous month.
             if (i < startDay) {
-                const previousMonth = new Date(year, month - 1, -1);
+                const previousMonth = new Date(year, month - 1, -1); // last day of previous month
                 const offset = previousMonth.getDate() - (startDay - i) + 2;
 
                 tempDay = this.createDayNode(dayName, offset, month - 1, true);
@@ -74,7 +74,7 @@ class Calendar {
 
             currentWeekDiv.append(tempDay);
 
-            // start a new week after 7 days have been added
+            // start a new week container after 7 days have been added
             if (currentWeekDiv.children.length === 7) {
                 this.weekContainer.append(currentWeekDiv);
                 currentWeekDiv = document.createElement("div");
@@ -103,6 +103,7 @@ class Calendar {
 
     createDayNode(dayName, dayNumber, month, isEmpty) {
         const daySection = document.createElement("section");
+        daySection.setAttribute("id", `${dayNumber}-${month}-${this.selectedDate.getFullYear()}`);
         daySection.classList.add("day-section");
 
         const dayHeader = document.createElement("p");
@@ -132,19 +133,71 @@ class Calendar {
     }
 
     changeFocusedDay(dayElement) {
-        if (this.selectedDay !== null) {
-            this.selectedDay.classList.remove("selected-day");
-            this.selectedDay.querySelector(".add-item-button")?.remove()
-        }
+
+        if (this.selectedDay === dayElement) { return; }
+
+        this.#clearFocusedDay();
+
         this.selectedDay = dayElement;
 
-        dayElement.classList.add("selected-day");
+        this.selectedDay.classList.add("selected-day");
 
+        this.selectedDay.append(this.#createAddButton());
+    }
+
+    #clearFocusedDay() {
+        if(this.selectedDay === null){
+            return;
+        }
+        this.selectedDay.classList.remove("selected-day");
+        this.selectedDay.querySelector(".add-item-button")?.remove();
+        this.selectedDay.querySelector(".input-field")?.remove();
+    }
+
+    #createAddButton(){
         const addButton = document.createElement("button");
         addButton.className = "add-item-button";
         addButton.textContent = "+";
 
-        dayElement.append(addButton);
+        addButton.addEventListener("click", (e) => {
+            e.stopPropagation();
+
+            const inputField = this.#createInputField();
+            if (inputField !== null) {
+                this.selectedDay.insertBefore(inputField, addButton);
+                inputField.focus();
+            }
+        })
+
+        return addButton;
+    }
+
+    #createInputField() {
+        if (this.selectedDay.querySelector(".input-field") == null) {
+            const inputField = document.createElement("input");
+            inputField.className = "input-field";
+            inputField.type = "text";
+            inputField.placeholder = "Enter Task"
+
+            inputField.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    const finishedText = document.createElement("p");
+                    finishedText.classList.add("day-task");
+                    finishedText.textContent = inputField.value.trim();
+
+                    this.selectedDay.insertBefore(finishedText, inputField);
+                    inputField.remove();
+                }
+            });
+            inputField.addEventListener("keydown", (e) => {
+                if(e.key === "Escape"){
+                    inputField.remove();
+                }
+            })
+
+            return inputField;
+        }
+        return null;
     }
 
 }
