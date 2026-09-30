@@ -94,29 +94,33 @@ class Calendar {
             }
             this.weekContainer.append(currentWeekDiv);
         }
+
+        this.loadJSON();
     }
 
     displayCalendarName(month) {
         const calendarHeader = document.getElementById("month-name");
-        calendarHeader.textContent = Calendar.monthNames[month];
+        calendarHeader.textContent = Calendar.monthNames[month] + " " + this.selectedDate.getFullYear();;
     }
 
     createDayNode(dayName, dayNumber, month, isEmpty) {
         const daySection = document.createElement("section");
-        daySection.setAttribute("id", `${dayNumber}-${month}-${this.selectedDate.getFullYear()}`);
-        daySection.classList.add("day-section");
+        daySection.setAttribute("id", `${this.selectedDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`);
+
 
         const dayHeader = document.createElement("p");
-        dayHeader.classList.add("day-header");
         dayHeader.textContent = `${dayName} ${dayNumber}/${month}`;
         daySection.append(dayHeader);
 
         if (!isEmpty) {
+            daySection.classList.add("day-section");
+            dayHeader.classList.add("day-header");
+
             daySection.addEventListener("click", () => {
                 this.changeFocusedDay(daySection);
             });
             daySection.addEventListener("mouseenter", () => {
-                daySection.style.background = "#91FFB7";
+                daySection.style.background = "#fffd91";
                 daySection.style.border = "1px solid green";
             })
             daySection.addEventListener("mouseleave", () => {
@@ -125,15 +129,73 @@ class Calendar {
             })
         }
         else {
-            daySection.style.background = "#C9C9C9";
-            daySection.style.border = "1px dashed gray"
+            dayHeader.classList.add("day-header", "empty");
+            daySection.classList.add("day-section", "empty");
         }
 
         return daySection;
     }
 
-    changeFocusedDay(dayElement) {
+    async loadJSON() {
+        const year = this.selectedDate.getFullYear();
+        const month = this.selectedDate.getMonth() + 1;
 
+        try {
+            const result = await fetch(`/api/tasks/${year}/${month}`);
+            if (!result.ok) return;
+
+            const tasks = await result.json();
+            for (const task of tasks) {
+
+                const daySection = document.getElementById(task.task_date);
+                if (daySection) {
+                    const tempTask = this.createListItem(task.title, task.id);
+
+                    daySection.append(tempTask);
+                }
+            }
+
+        } catch (e) {
+            console.log(`Error loading ${fileName}`);
+        }
+
+    }
+
+    async saveTask(title, parentElement) {
+        const taskDate = this.selectedDay.id;
+        const year = this.selectedDate.getFullYear();
+        const month = this.selectedDate.getMonth() + 1;
+
+        try {
+            const response = await fetch(`api/tasks/${year}/${month}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ task_date: taskDate, title })
+            });
+
+            if (response.ok) {
+                const savedTask = await response.json();
+                const finishedTask = this.createListItem(savedTask.title, savedTask.id);
+                this.selectedDay.insertBefore(finishedTask, parentElement);
+            }
+        } catch (e) {
+            console.log("Failed to save task: ", e);
+        }
+    }
+
+    async deleteTask(id, element) {
+        const year = this.selectedDate.getFullYear();
+        const month = this.selectedDate.getMonth() + 1;
+
+        try {
+            const response = await fetch(`/api/tasks/${year}/${month}/${id}`, { method: "DELETE" });
+            if (response.ok) element.remove();
+        } catch (e) {
+            console.log("Error deleting taks", e);
+        }
+    }
+
+    changeFocusedDay(dayElement) {
         if (this.selectedDay === dayElement) { return; }
 
         this.#clearFocusedDay();
@@ -146,7 +208,7 @@ class Calendar {
     }
 
     #clearFocusedDay() {
-        if(this.selectedDay === null){
+        if (this.selectedDay === null) {
             return;
         }
         this.selectedDay.classList.remove("selected-day");
@@ -154,7 +216,7 @@ class Calendar {
         this.selectedDay.querySelector(".input-field")?.remove();
     }
 
-    #createAddButton(){
+    #createAddButton() {
         const addButton = document.createElement("button");
         addButton.className = "add-item-button";
         addButton.textContent = "+";
@@ -162,7 +224,9 @@ class Calendar {
         addButton.addEventListener("click", (e) => {
             e.stopPropagation();
 
-            const inputField = this.#createInputField();
+            addButton.classList.toggle("hidden");
+
+            const inputField = this.createInputField(addButton);
             if (inputField !== null) {
                 this.selectedDay.insertBefore(inputField, addButton);
                 inputField.focus();
@@ -172,32 +236,54 @@ class Calendar {
         return addButton;
     }
 
-    #createInputField() {
+    createInputField(button) {
         if (this.selectedDay.querySelector(".input-field") == null) {
             const inputField = document.createElement("input");
             inputField.className = "input-field";
             inputField.type = "text";
-            inputField.placeholder = "Enter Task"
+            inputField.placeholder = "Enter Task";
 
-            inputField.addEventListener("keydown", (e) => {
+            const removeFieldRevealButton = () => {
+                inputField.remove();
+                button.classList.remove("hidden");
+            }
+
+            inputField.addEventListener("keydown", async (e) => {
                 if (e.key === "Enter") {
-                    const finishedText = document.createElement("p");
-                    finishedText.classList.add("day-task");
-                    finishedText.textContent = inputField.value.trim();
+                    const title = inputField.value.trim();
+                    if (title) {
+                        await this.saveTask(title, inputField);
+                    }
 
-                    this.selectedDay.insertBefore(finishedText, inputField);
-                    inputField.remove();
+                    removeFieldRevealButton();
+                }
+                else if (e.key === "Escape") {
+                    removeFieldRevealButton();
                 }
             });
-            inputField.addEventListener("keydown", (e) => {
-                if(e.key === "Escape"){
-                    inputField.remove();
-                }
-            })
 
             return inputField;
         }
         return null;
+    }
+
+    createListItem(inputText, id = null) {
+        const finishedTask = document.createElement("li");
+        finishedTask.classList.add("day-task");
+        finishedTask.textContent = inputText;
+        if (id) finishedTask.dataset.id = id;
+
+        finishedTask.addEventListener("click", async () => {
+            const taskId = finishedTask.dataset.id;
+            if (!taskId) {
+                finishedTask.remove();
+                return;
+            }
+
+            await this.deleteTask(taskId, finishedTask);
+        });
+
+        return finishedTask;
     }
 
 }
