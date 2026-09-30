@@ -3,16 +3,17 @@
 }
 
 .section {
-    border-top: solid #3f3f3f;
-    margin: 5px;
+    border-top: dashed #a80303;
     padding: 10px;
 }
 
 .section-title {
     text-align: center;
-    margin-top: 10px;
-    margin-left: 20px;
-    margin-right: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+
+    background-color: rgb(255, 161, 148);
+    border-radius: 20px;
 }
 
 .day-container {
@@ -106,7 +107,11 @@
     border-radius: 10px;
 }
 
-.create-new-list-button{
+.create-new-list.highlight {
+    background-color: rgb(197, 255, 174);
+}
+
+.create-new-list-button {
     background-color: rgb(187, 187, 187);
     padding: 20px;
     border: hidden;

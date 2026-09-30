@@ -95,7 +95,7 @@ class Calendar {
             this.weekContainer.append(currentWeekDiv);
         }
 
-        this.loadJSON();
+        this.loadTasks();
     }
 
     displayCalendarName(month) {
@@ -136,7 +136,7 @@ class Calendar {
         return daySection;
     }
 
-    async loadJSON() {
+    async loadTasks() {
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
 
