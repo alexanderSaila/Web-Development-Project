@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Welcome - Login & Register</title>
+    <style>
+        body {
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+
+            background-color: rgb(255, 231, 231);
+        }
+
+        .center-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            background-color: #FFCCCC;
+
+            margin: auto;
+            padding: 20px;
+            border: 5px solid #ffb3b3;
+            border-radius: 10px;
+        }
+
+        .login-title {
+            padding: 1px;
+            margin-top: 1px;
+        }
+
+        .login-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 10px;
+        }
+
+        .login-form{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            padding: 10px;
+        }
+
+        .input-field{
+            margin-bottom: 10px;
+        }
+
+        .submit-button{
+            max-width: 100px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="center-box">
+        <h3 class="login-title">LOGIN</h3>
+        <section id="login-box" class="login-section">
+            <form id="login-form" class="login-form">
+                <input type="text" id="email" placeholder="email" class="input-field" required>
+                <input type="password" id="password" placeholder="password" class="input-field" required>
+                <button type="submit" class="submit-button">Submit</button>
+            </form>
+            <a id="register-user" href="/register.html">Register</a>
+        </section>
+    </div>
+
+    <script>
+        document.getElementById("login-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            try {
+                const response = await fetch("/api/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                if(response.ok){
+                    const user = await response.json();
+                    
+                    sessionStorage.setItem("loggedInUserId", user.id);
+
+                    window.location.href = "/Calendar.html";
+                }
+            } catch (error) {
+                console.error("error logging in:", error);
+            }
+        });
+    </script>
+</body>
+
+</html>

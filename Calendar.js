@@ -1,3 +1,5 @@
+
+
 class Calendar {
 
     static monthNames = [
@@ -33,8 +35,39 @@ class Calendar {
             this.selectedDate.setMonth(this.selectedDate.getMonth() + 1);
             this.displayMonth();
         });
+        document.getElementById("log-out-button").addEventListener("click", () => {
+            sessionStorage.setItem("loggedInUserId", null);
+            window.location.href = "login.html";
+        });
+
+        this.setUpShare();
 
         this.displayMonth();
+    }
+
+    setUpShare() {
+        const shareWindow = document.getElementById("share-window");
+        const shareButton = document.getElementById("share-button");
+
+        shareButton.addEventListener("click", () => {
+            shareWindow.style.display = "flex";
+        });
+
+        window.addEventListener("click", (event) => {
+            if (event.target === shareWindow) {
+                shareWindow.style.display = "none";
+            }
+        });
+
+        document.getElementById("submit-share").addEventListener("click", () => {
+            const email = document.getElementById("share-email").value.trim();
+            if (email) {
+                this.shareTask(email);
+
+                shareWindow.style.display = "none";
+                document.getElementById("share-email").value = "";
+            }
+        });
     }
 
     displayMonth() {
@@ -139,9 +172,14 @@ class Calendar {
     async loadTasks() {
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
+        const userId = sessionStorage.getItem("loggedInUserId");
 
         try {
-            const result = await fetch(`/api/tasks/${year}/${month}`);
+            const result = await fetch(`/api/tasks/${year}/${month}`, {
+                method: "GET",
+                headers: { "user-id": userId }
+            });
+
             if (!result.ok) return;
 
             const tasks = await result.json();
@@ -156,7 +194,7 @@ class Calendar {
             }
 
         } catch (e) {
-            console.log(`Error loading ${fileName}`);
+            console.log("Error loading", e);
         }
 
     }
@@ -165,11 +203,15 @@ class Calendar {
         const taskDate = this.selectedDay.id;
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
+        const userId = sessionStorage.getItem("loggedInUserId");
 
         try {
             const response = await fetch(`api/tasks/${year}/${month}`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "user-id": userId
+                },
                 body: JSON.stringify({ task_date: taskDate, title })
             });
 
@@ -186,12 +228,42 @@ class Calendar {
     async deleteTask(id, element) {
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
+        const userId = sessionStorage.getItem("loggedInUserId");
 
         try {
-            const response = await fetch(`/api/tasks/${year}/${month}/${id}`, { method: "DELETE" });
-            if (response.ok) element.remove();
+            const response = await fetch(`/api/tasks/${year}/${month}/${id}`, {
+                method: "DELETE",
+                headers: { "user-id": userId }
+            });
+
+            if (response.ok) {
+                element.remove();
+                const data = await response.json();
+                console.log(data.message);
+            }
         } catch (e) {
             console.log("Error deleting taks", e);
+        }
+    }
+
+    async shareTask(email) {
+        const loggedInUserId = sessionStorage.getItem("loggedInUserId");
+
+        try {
+            const response = await fetch("/api/share", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "user-id": loggedInUserId
+                },
+                body: JSON.stringify({ email })
+            });
+
+            if (response.ok) {
+                console.log(response.message);
+            }
+        } catch (e) {
+            console.error("Failed to share:", e);
         }
     }
 
@@ -288,4 +360,16 @@ class Calendar {
 
 }
 
-const calendar = new Calendar();
+async function initializeApp() {
+
+    const userId = sessionStorage.getItem("loggedInUserId");
+
+    if (userId) {
+        const calendar = new Calendar();
+    } else {
+        window.location.href = "/login.html"
+    }
+}
+
+
+initializeApp();

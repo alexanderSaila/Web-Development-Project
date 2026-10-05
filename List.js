@@ -11,11 +11,15 @@ if (createNewListButton) {
     createNewListButton.addEventListener("mouseleave", () => {
         parent.classList.remove("highlight");
     });
+
+    createNewListButton.addEventListener("click", () => {
+        addListElement();
+    })
 }
 else {
     console.log("NO BUTTON FOUND");
 }
 
 function addListElement() {
-
+    console.log("Add new list");
 }

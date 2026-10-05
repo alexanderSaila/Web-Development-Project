@@ -1,0 +1,33 @@
+CREATE DATABASE IF NOT EXISTS user_management;
+USE user_management;
+
+-- 1. Create the User table first (since other tables depend on its uID)
+CREATE TABLE User (
+    uID INT(11) NOT NULL AUTO_INCREMENT,
+    fName VARCHAR(100) NOT NULL,
+    lName VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    PRIMARY KEY (uID),
+    UNIQUE KEY (email)
+);
+
+-- 2. Create the Task table
+CREATE TABLE Task (
+    tID INT(11) NOT NULL AUTO_INCREMENT,
+    description TEXT,
+    date DATE,
+    uID INT(11),
+    PRIMARY KEY (tID),
+    KEY (uID),
+    FOREIGN KEY (uID) REFERENCES User(uID)
+);
+
+-- 3. Create the UserShares table
+CREATE TABLE UserShares (
+    sharer_uID INT(11) NOT NULL,
+    shared_with_uID INT(11) NOT NULL,
+    PRIMARY KEY (sharer_uID, shared_with_uID),
+    FOREIGN KEY (sharer_uID) REFERENCES User(uID),
+    FOREIGN KEY (shared_with_uID) REFERENCES User(uID)
+);

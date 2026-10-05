@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Welcome - Login & Register</title>
+    <style>
+        body {
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+
+            background-color: rgb(255, 231, 231);
+        }
+
+        .center-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            background-color: #FFCCCC;
+
+            margin: auto;
+            padding: 20px;
+            border: 5px solid #ffb3b3;
+            border-radius: 10px;
+        }
+
+        .register-title {
+            padding: 1px;
+            margin-top: 1px;
+        }
+
+        .register-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 10px;
+        }
+
+        .register-form{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            padding: 10px;
+        }
+
+        .input-field{
+            margin-bottom: 10px;
+        }
+
+        .submit-button{
+            max-width: 100px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="center-box">
+        <h3 class="register-title">REGISTER NEW USER</h3>
+        <section id="register-box" class="register-section">
+            <form id="register-form" class="register-form">
+                <input type="first-name" id="first-name" placeholder="First name" class="input-field" required>
+                <input type="last-name" id="last-name" placeholder="Last name" class="input-field" required>
+                <input type="text" id="email" placeholder="email" class="input-field" required>
+                <input type="password" id="password" placeholder="password" class="input-field" required>
+                <button type="submit" class="submit-button">Submit</button>
+            </form>
+            <a id="register-user" href="/login.html">exit</a>
+        </section>
+    </div>
+
+    <script>
+        document.getElementById("register-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const firstName = document.getElementById("first-name").value;
+            const lastName = document.getElementById("last-name").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            try {
+                const response = await fetch("/api/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        firstName: firstName,
+                        lastName: lastName, 
+                        email: email, 
+                        password: password
+                    })
+                });
+                
+                if(response.ok){
+                    const data = await response.json();
+                    console.log(data.message);
+
+                    window.location.href = "/login.html";
+                }
+            } catch (error) {
+                console.error("error logging in:", error);
+            }
+        });
+    </script>
+</body>
+
+</html>
