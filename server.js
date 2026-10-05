@@ -1,32 +1,194 @@
+require('dotenv').config();
 const express = require('express');
 const mariadb = require('mariadb');
 const bcrypt = require('bcrypt');
 const path = require('path');
 const cors = require('cors');
-const { error } = require('console');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
-const PORT = 3000;
-
-const LOGGED_IN_USER_ID = null;
+const PORT = process.env.PORT;
 
 const pool = mariadb.createPool({
-    host: 'localhost',
-    user: 'root', // Replace with your DB user
-    password: 'your_secure_password', // Replace with your DB password
-    database: 'user_management',
-    connectionLimit: 5
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    connectionLimit: process.env.DB_CONNECTION_LIMIT
+});
+
+// ***********************
+// HELPERS
+// ***********************
+
+async function canAccessList(listId, userId) {
+    const rows = await pool.query(
+        `SELECT 1 FROM List
+         WHERE lID = ?
+           AND (uID = ?
+                OR uID IN (SELECT sharer_uID FROM UserSharesList
+                           WHERE shared_with_uID = ? AND is_accepted = TRUE))`,
+        [listId, userId, userId]
+    );
+    return rows.length > 0;
+}
+
+
+// **********************
+// RATE LIMITERS
+// OBS!! 
+// Ändra max-värdena när appen är i produktion
+// **********************
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000, // Limit each IP to 5 login requests per windowMs
+    message: "Too many login attempts from this IP, please try again after 15 minutes"
+});
+
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 1000, // Limit each IP to 10 registration requests per windowMs
+    message: "Too many accounts created from this IP, please try again after an hour"
+});
+
+const otherLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5000, // Limit each IP to 5 requests per windowMs
+    message: "Too many requests from this IP, please try again after 15 minutes"
 });
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 
 
+
+
+// ***********************
+// SHARES
+//
+// OBS!!
+// Måste ligga före POST /api/tasks/:year/:month
+// annars tolkas /api/tasks/share/accept som year = "share" och month = "accept"
+// ***********************
+
+
+
+
+// ***********************
+// GET PENDING SHARE REQUESTS
+// ***********************
+
+app.get("/api/shares/pending", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const query = `
+        SELECT 'task' AS type, User.uID AS sharerId, User.fName, User.lName, User.email
+        FROM UserSharesTask
+        JOIN User ON User.uID = UserSharesTask.sharer_uID
+        WHERE UserSharesTask.shared_with_uID = ? AND UserSharesTask.is_accepted = FALSE
+        UNION ALL
+        SELECT 'list', User.uID, User.fName, User.lName, User.email
+        FROM UserSharesList
+        JOIN User ON User.uID = UserSharesList.sharer_uID
+        WHERE UserSharesList.shared_with_uID = ? AND UserSharesList.is_accepted = FALSE
+    `;
+
+    try {
+        const pendingShares = await pool.query(query, [loggedInUserId, loggedInUserId]);
+        res.json(pendingShares);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Error fetching pending shares from database" });
+    }
+});
+
+
+// ***********************
+// ACCEPT LIST SHARE
+// ***********************
+
+app.post("/api/lists/share/accept", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { sharerId } = req.body;
+
+    if (!sharerId) {
+        return res.status(400).json({ error: "Sharer ID is required" });
+    }
+
+    try {
+        const result = await pool.query(
+            "UPDATE UserSharesList SET is_accepted = TRUE WHERE sharer_uID = ? AND shared_with_uID = ? AND is_accepted = FALSE",
+            [sharerId, loggedInUserId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "No pending share request found" });
+        }
+
+        res.status(200).json({ message: "Share request accepted" });
+
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Error accepting share request in database" });
+    }
+});
+
+
+// ***********************
+// ACCEPT TASK SHARE
+// ***********************
+app.post("/api/tasks/share/accept", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { sharerId } = req.body;
+
+    if (!sharerId) {
+        return res.status(400).json({ error: "Sharer ID is required" });
+    }
+
+    try {
+        const result = await pool.query(
+            "UPDATE UserSharesTask SET is_accepted = TRUE WHERE sharer_uID = ? AND shared_with_uID = ? AND is_accepted = FALSE",
+            [sharerId, loggedInUserId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "No pending share request found" });
+        }
+
+        res.status(200).json({ message: "Share request accepted" });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Error accepting share request in database" });
+    }
+});
+
+
+
+
+
+// **********************
+// GET TASKS FOR SPECIFIC YEAR AND MONTH
+// **********************
 app.get('/api/tasks/:year/:month', async (req, res) => {
     const loggedInUserId = req.headers["user-id"];
     
     if (!loggedInUserId) {
+        console.log("Unauthorized. Please log in.");
         return res.status(401).json({ error: "Unauthorized. Please log in." });
     }
 
@@ -39,8 +201,11 @@ app.get('/api/tasks/:year/:month', async (req, res) => {
         UNION
         SELECT Task.tID as id, Task.description as title, DATE_FORMAT(Task.date, '%Y-%m-%d') as task_date, uID as userId
         FROM Task
-        JOIN UserShares ON Task.uID = UserShares.sharer_uID
-        WHERE UserShares.shared_with_uID = ? AND YEAR(Task.date) = ? AND MONTH(Task.date) = ?
+        JOIN UserSharesTask ON Task.uID = UserSharesTask.sharer_uID
+        WHERE UserSharesTask.shared_with_uID = ? 
+        AND UserSharesTask.is_accepted = TRUE
+        AND YEAR(Task.date) = ? 
+        AND MONTH(Task.date) = ?
     `;
 
     try {
@@ -50,11 +215,16 @@ app.get('/api/tasks/:year/:month', async (req, res) => {
         ]);
         res.json(tasks);
     } catch (e) {
+        console.error(e);
         res.status(500).json({ error: "Failed to read tasks from database" });
     }
 });
 
-app.post("/api/register", async (req, res) => {
+
+// **********************
+// REGISTER NEW USER
+// **********************
+app.post("/api/register", registerLimiter, async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
 
     if (!firstName || !lastName || !email || !password) {
@@ -78,7 +248,10 @@ app.post("/api/register", async (req, res) => {
     }
 });
 
-app.post("/api/login", async (req, res) => {
+// **********************
+// LOGIN USER
+// **********************
+app.post("/api/login", loginLimiter, async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -115,37 +288,116 @@ app.post("/api/login", async (req, res) => {
     }
 });
 
-app.post("/api/share", async (req, res) =>{
+
+// **********************
+// CHANGE PASSWORD
+// **********************
+app.post("/api/change-password", otherLimiter, async (req, res) => {
     const loggedInUserId = req.headers["user-id"];
-    
+    const { currentPassword, newPassword } = req.body;
+
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
     }
 
-    const {email} = req.body;
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Current and new passwords are required" });
+    }
 
-    try{
-        const askId = await pool.query(
-            "SELECT * FROM User WHERE email = ?",
-            [email]
+    try {
+        const result = await pool.query(
+            "SELECT password_hash FROM User WHERE uID = ?",
+            [loggedInUserId]
         );
-        if(askId.length === 0){
-            return res.status(404).json({ error: "User not found in database" });
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: "User not found" });
         }
 
-        const recipient = askId[0];
+        const passwordMatch = await bcrypt.compare(currentPassword, result[0].password_hash);
 
-        const result = await pool.query(
-            "INSERT INTO UserShares (sharer_uID, shared_with_uID) VALUES (?, ?)",
-            [loggedInUserId, recipient.uID]
+        if (!passwordMatch) {
+            return res.status(401).json({ error: "Current password is incorrect" });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+        await pool.query(
+            "UPDATE User SET password_hash = ? WHERE uID = ?",
+            [hashedNewPassword, loggedInUserId]
         );
 
-        res.status(201).json({ message: "Successfully shared" });
-    }catch (e){
-        return res.status(500).json({ error: "Error sharing in database" });
+        res.json({ message: "Password changed successfully" });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to change password" });
     }
 });
 
+
+// ***********************
+// SHARE TASKS WITH ANOTHER USER
+// ***********************
+app.post("/api/tasks/share", otherLimiter, async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+    }
+
+    try {
+        const users = await pool.query(
+            "SELECT uID FROM User WHERE email = ?",
+            [email]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const recipientId = users[0].uID;
+
+        if (recipientId === Number(loggedInUserId)) {
+            return res.status(400).json({ error: "You cannot share with yourself" });
+        }
+
+        const existing = await pool.query(
+            "SELECT 1 FROM UserSharesTask WHERE sharer_uID = ? AND shared_with_uID = ?",
+            [loggedInUserId, recipientId]
+        );
+
+        if (existing.length > 0) {
+            return res.status(409).json({ error: "Already shared with this user" });
+        }
+
+        await pool.query(
+            "INSERT INTO UserSharesTask (sharer_uID, shared_with_uID) VALUES (?, ?)",
+            [loggedInUserId, recipientId]
+        );
+
+        res.status(201).json({ message: "Share request sent" });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Error sharing tasks in database" });
+    }
+});
+
+
+
+
+
+
+
+// **********************
+// ADD NEW TASK
+// **********************
 app.post("/api/tasks/:year/:month", async (req, res) => {
     const loggedInUserId = req.headers["user-id"];
     
@@ -157,6 +409,7 @@ app.post("/api/tasks/:year/:month", async (req, res) => {
 
     if (!task_date || !title) {
         return res.status(400).json({ error: 'task_date and title required' });
+
     }
 
     try {
@@ -172,10 +425,15 @@ app.post("/api/tasks/:year/:month", async (req, res) => {
         };
         res.status(201).json(newTask);
     } catch (e) {
+        console.error(e);
         res.status(500).json({ error: 'Failed to save task to database' });
     }
 });
 
+
+// **********************
+// DELETE TASK
+// **********************
 app.delete("/api/tasks/:year/:month/:id", async (req, res) => {
     const loggedInUserId = req.headers["user-id"];
     
@@ -194,9 +452,405 @@ app.delete("/api/tasks/:year/:month/:id", async (req, res) => {
         }
         res.json({ message: 'Task deleted successfully', id });
     } catch (e) {
+        console.error(e);
         res.status(500).json({ error: "Failed to delete task from database" });
     }
 
 });
 
+
+
+// **********************
+// UPDATE TASK
+// **********************
+app.put("/api/tasks/:id", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { id } = req.params;
+    const { title } = req.body;
+
+    if (!title) {
+        return res.status(400).json({ error: 'title required' });
+    }
+
+    try {
+        const result = await pool.query(
+            "UPDATE Task SET description = ? WHERE tID = ? AND uID = ?",
+            [title.trim(), id, loggedInUserId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Task not found or not authorized to user" });
+        }
+
+        const updatedTask = {
+            id: id,
+            title: title.trim()
+        };
+        res.json(updatedTask);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to update task in database" });
+    }
+});
+
+
+
+
+// ***********************
+// LISTS
+// ***********************
+
+// ***********************
+// GET ALL LISTS
+// ***********************
+app.get("/api/lists", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const query = `
+        SELECT lID AS id, title, uID AS ownerId
+        FROM List
+        WHERE uID = ?
+        UNION
+        SELECT List.lID AS id, List.title, List.uID AS ownerId
+        FROM List
+        JOIN UserSharesList ON List.uID = UserSharesList.sharer_uID
+        WHERE UserSharesList.shared_with_uID = ?
+          AND UserSharesList.is_accepted = TRUE
+    `;
+
+    try {
+        const lists = await pool.query(query, [loggedInUserId, loggedInUserId]);
+        res.json(lists);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to read lists from database" });
+    }
+});
+
+
+
+// ***********************
+// GET ELEMENTS IN LIST
+// ***********************
+app.get("/api/lists/:listId/elements", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { listId } = req.params;
+
+    try {
+        if (!(await canAccessList(listId, loggedInUserId))) {
+            return res.status(404).json({ error: "List not found or not authorized to user" });
+        }
+
+        const result = await pool.query(
+            "SELECT leID AS id, title, description, is_checked FROM ListElement WHERE lID = ? ORDER BY leID",
+            [listId]
+        );
+
+        // is_checked kommer som 0/1 från databasen, gör om till true/false
+        const elements = result.map(row => ({
+            ...row,
+            is_checked: Boolean(row.is_checked)
+        }));
+
+        res.json(elements);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to read list elements from database" });
+    }
+});
+
+
+// ***********************
+// ADD LIST
+// ***********************
+app.post("/api/lists", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { title } = req.body;
+
+    if (!title) {
+        return res.status(400).json({ error: 'title required' });
+    }
+
+    try {
+        const result = await pool.query(
+            "INSERT INTO List (title, uID) VALUES (?, ?)",
+            [title.trim(), loggedInUserId]
+        );
+        res.status(201).json({ message: "List created successfully", id: result.insertId.toString(), title: title.trim() });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to create list in database" });
+    }
+});
+
+// ***********************
+// DELETE LIST
+// ***********************
+app.delete("/api/lists/:id", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { id } = req.params;
+
+    try {
+        const result = await pool.query(
+            "DELETE FROM List WHERE lID = ? AND uID = ?",
+            [id, loggedInUserId]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "List not found or not authorized to user" });
+        }
+        res.status(200).json({ message: "List deleted successfully" });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to delete list from database" });
+    }
+});
+
+// ***********************
+// UPDATE LIST
+// ***********************
+app.put("/api/lists/:id", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { id } = req.params;
+    const { title } = req.body;
+
+    if (!title) {
+        return res.status(400).json({ error: 'title required' });
+    }
+
+    try {
+        const result = await pool.query(
+            "UPDATE List SET title = ? WHERE lID = ? AND uID = ?",
+            [title.trim(), id, loggedInUserId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "List not found or not authorized to user" });
+        }
+
+        const updatedList = {
+            id: id,
+            title: title.trim()
+        };
+        res.json(updatedList);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to update list in database" });
+    }
+});
+
+// ***********************
+// SHARE LIST WITH ANOTHER USER
+// ***********************
+app.post("/api/lists/:listId/share", otherLimiter, async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+    }
+
+    try {
+        const users = await pool.query(
+            "SELECT uID FROM User WHERE email = ?",
+            [email]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const recipientId = users[0].uID;
+
+        if (recipientId === Number(loggedInUserId)) {
+            return res.status(400).json({ error: "You cannot share with yourself" });
+        }
+
+        const existing = await pool.query(
+            "SELECT 1 FROM UserSharesList WHERE sharer_uID = ? AND shared_with_uID = ?",
+            [loggedInUserId, recipientId]
+        );
+
+        if (existing.length > 0) {
+            return res.status(409).json({ error: "Already shared with this user" });
+        }
+
+        await pool.query(
+            "INSERT INTO UserSharesList (sharer_uID, shared_with_uID) VALUES (?, ?)",
+            [loggedInUserId, recipientId]
+        );
+
+        res.status(201).json({ message: "Share request sent" });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Error sharing list in database" });
+    }
+});
+
+
+
+// ***********************
+// ADD ELEMENT TO LIST
+// ***********************
+app.post("/api/lists/:listId/elements", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { listId } = req.params;
+    const { title, description } = req.body;
+
+
+    if (!title || !description) {
+        return res.status(400).json({ error: 'title and description required' });
+    }
+
+    try {
+        if (!(await canAccessList(listId, loggedInUserId))) {
+            return res.status(404).json({ error: "List not found or not authorized to user" });
+        }
+
+        const result = await pool.query(
+            "INSERT INTO ListElement (title, description, lID) VALUES (?, ?, ?)",
+            [title.trim(), description.trim(), listId]
+        );
+
+        const newElement = {
+            id: result.insertId.toString(),
+            title: title.trim(),
+            description: description.trim(),
+            is_checked: false
+        };
+        res.status(201).json(newElement);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to add element to list in database" });
+    }
+});
+
+
+// ***********************
+// DELETE ELEMENT FROM LIST
+// ***********************
+app.delete("/api/lists/:listId/elements/:elementId", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    try {
+        const { listId, elementId } = req.params;
+
+        if (!(await canAccessList(listId, loggedInUserId))) {
+            return res.status(404).json({ error: "List not found or not authorized to user" });
+        }
+
+        const result = await pool.query(
+            "DELETE FROM ListElement WHERE leID = ? AND lID = ?",
+            [elementId, listId]
+        );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Element not found or not authorized to user" });
+        }
+        res.json({ message: 'Element deleted successfully', elementId });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to delete element from list in database" });
+    }
+});
+
+
+
+// ***********************
+// UPDATE ELEMENT IN LIST
+// ***********************
+app.put("/api/lists/:listId/elements/:elementId", async (req, res) => {
+    const loggedInUserId = req.headers["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const { listId, elementId } = req.params;
+    const { title, description, is_checked } = req.body;
+
+    if (!title || !description || typeof is_checked !== 'boolean') {
+        return res.status(400).json({ error: 'title, description and is_checked (boolean) required' });
+    }
+
+    try {
+        if (!(await canAccessList(listId, loggedInUserId))) {
+            return res.status(404).json({ error: "List not found or not authorized to user" });
+        }
+
+        const result = await pool.query(
+            "UPDATE ListElement SET title = ?, description = ?, is_checked = ? WHERE leID = ? AND lID = ?",
+            [title.trim(), description.trim(), is_checked, elementId, listId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Element not found or not authorized to user" });
+        }
+
+        const updatedElement = {
+            id: elementId,
+            title: title.trim(),
+            description: description.trim(),
+            is_checked: is_checked
+        };
+        res.json(updatedElement);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to update element in list in database" });
+    }
+});
+
+
+
+
+
+
+
+
+
+// ***********************
+// START THE SERVER
+// ***********************
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));

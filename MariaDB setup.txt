@@ -1,33 +1,62 @@
-CREATE DATABASE IF NOT EXISTS user_management;
-USE user_management;
+-- OBS: raderar hela databasen och all data i den.
+-- Använd bara under utveckling när du vill börja om från början.
+DROP DATABASE IF EXISTS project_calendar;
 
--- 1. Create the User table first (since other tables depend on its uID)
-CREATE TABLE User (
-    uID INT(11) NOT NULL AUTO_INCREMENT,
+CREATE DATABASE IF NOT EXISTS project_calendar;
+USE project_calendar;
+
+-- 1. Användare
+CREATE TABLE IF NOT EXISTS User (
+    uID INT AUTO_INCREMENT PRIMARY KEY,
     fName VARCHAR(100) NOT NULL,
     lName VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    PRIMARY KEY (uID),
-    UNIQUE KEY (email)
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL
 );
 
--- 2. Create the Task table
-CREATE TABLE Task (
-    tID INT(11) NOT NULL AUTO_INCREMENT,
-    description TEXT,
-    date DATE,
-    uID INT(11),
-    PRIMARY KEY (tID),
-    KEY (uID),
-    FOREIGN KEY (uID) REFERENCES User(uID)
+-- 2. Uppgifter i kalendern (User 1 – 0..* Task)
+CREATE TABLE IF NOT EXISTS Task (
+    tID INT AUTO_INCREMENT PRIMARY KEY,
+    description TEXT NOT NULL,
+    date DATE NOT NULL,
+    uID INT NOT NULL,
+    FOREIGN KEY (uID) REFERENCES User(uID) ON DELETE CASCADE
 );
 
--- 3. Create the UserShares table
-CREATE TABLE UserShares (
-    sharer_uID INT(11) NOT NULL,
-    shared_with_uID INT(11) NOT NULL,
+-- 3. Listor (User 1 – 0..* List)
+CREATE TABLE IF NOT EXISTS List (
+    lID INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    uID INT NOT NULL,
+    FOREIGN KEY (uID) REFERENCES User(uID) ON DELETE CASCADE
+);
+
+-- 4. Element i en lista (List 1 – 0..* ListElement)
+CREATE TABLE IF NOT EXISTS ListElement (
+    leID INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    is_checked BOOLEAN NOT NULL DEFAULT FALSE,
+    lID INT NOT NULL,
+    FOREIGN KEY (lID) REFERENCES List(lID) ON DELETE CASCADE
+);
+
+-- 5. Delning av ALLA en användares uppgifter med en annan användare
+CREATE TABLE IF NOT EXISTS UserSharesTask (
+    sharer_uID INT NOT NULL,
+    shared_with_uID INT NOT NULL,
+    is_accepted BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (sharer_uID, shared_with_uID),
-    FOREIGN KEY (sharer_uID) REFERENCES User(uID),
-    FOREIGN KEY (shared_with_uID) REFERENCES User(uID)
+    FOREIGN KEY (sharer_uID) REFERENCES User(uID) ON DELETE CASCADE,
+    FOREIGN KEY (shared_with_uID) REFERENCES User(uID) ON DELETE CASCADE
+);
+
+-- 6. Delning av ALLA en användares listor med en annan användare
+CREATE TABLE IF NOT EXISTS UserSharesList (
+    sharer_uID INT NOT NULL,
+    shared_with_uID INT NOT NULL,
+    is_accepted BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (sharer_uID, shared_with_uID),
+    FOREIGN KEY (sharer_uID) REFERENCES User(uID) ON DELETE CASCADE,
+    FOREIGN KEY (shared_with_uID) REFERENCES User(uID) ON DELETE CASCADE
 );

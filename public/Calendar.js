@@ -36,7 +36,7 @@ class Calendar {
             this.displayMonth();
         });
         document.getElementById("log-out-button").addEventListener("click", () => {
-            sessionStorage.setItem("loggedInUserId", null);
+            sessionStorage.removeItem("loggedInUserId");
             window.location.href = "login.html";
         });
 
@@ -187,7 +187,7 @@ class Calendar {
 
                 const daySection = document.getElementById(task.task_date);
                 if (daySection) {
-                    const tempTask = this.createListItem(task.title, task.id);
+                    const tempTask = this.createTaskElement(task.title, task.id);
 
                     daySection.append(tempTask);
                 }
@@ -212,12 +212,12 @@ class Calendar {
                     "Content-Type": "application/json",
                     "user-id": userId
                 },
-                body: JSON.stringify({ task_date: taskDate, title })
+                body: JSON.stringify({ task_date: taskDate, title: title })
             });
 
             if (response.ok) {
                 const savedTask = await response.json();
-                const finishedTask = this.createListItem(savedTask.title, savedTask.id);
+                const finishedTask = this.createTaskElement(savedTask.title, savedTask.id);
                 this.selectedDay.insertBefore(finishedTask, parentElement);
             }
         } catch (e) {
@@ -250,13 +250,13 @@ class Calendar {
         const loggedInUserId = sessionStorage.getItem("loggedInUserId");
 
         try {
-            const response = await fetch("/api/share", {
+            const response = await fetch("/api/tasks/share", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "user-id": loggedInUserId
                 },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email: email })
             });
 
             if (response.ok) {
@@ -339,25 +339,117 @@ class Calendar {
         return null;
     }
 
-    createListItem(inputText, id = null) {
+    createTaskElement(inputText, id = null) {
         const finishedTask = document.createElement("li");
         finishedTask.classList.add("day-task");
         finishedTask.textContent = inputText;
         if (id) finishedTask.dataset.id = id;
 
-        finishedTask.addEventListener("click", async () => {
-            const taskId = finishedTask.dataset.id;
-            if (!taskId) {
-                finishedTask.remove();
-                return;
-            }
+        finishedTask.addEventListener("click", async (e) => {
+            e.stopPropagation();
 
-            await this.deleteTask(taskId, finishedTask);
+            const editTaskWindow = document.getElementById("edit-task-window");
+            const optionWindow = this.createOptionWindow(finishedTask);
+
+            editTaskWindow.append(optionWindow);
+
         });
 
         return finishedTask;
     }
 
+    createOptionWindow(task) {
+        const window = document.createElement("div");
+        window.classList.add("task-option-window");
+
+        const content = document.createElement("div");
+        content.classList.add("task-option-content");
+
+        const taskLocation = task.getBoundingClientRect();
+
+        content.style.left = `${taskLocation.left}px`;
+        content.style.top = `${taskLocation.bottom + 5}px`;
+
+        const editButton = document.createElement("button");
+        const deleteButton = document.createElement("button");
+        const exitButton = document.createElement("button");
+
+
+        editButton.textContent = "Edit";
+        deleteButton.textContent = "Delete";
+        exitButton.textContent = "Exit";
+
+        editButton.addEventListener("click", (e) => {
+            e.stopPropagation();
+
+            const editField = this.createEditTaskField(task, window);
+            content.insertBefore(editField, editButton);
+
+            console.log("ADDED EDIT FIELD");
+
+            editButton.style.display = "none";
+            editField.focus();
+        })
+
+        deleteButton.addEventListener("click", async () => {
+            const taskId = task.dataset.id;
+            if (!taskId) {
+                task.remove();
+                return;
+            }
+            await this.deleteTask(taskId, task);
+            window.remove();
+        });
+
+        exitButton.addEventListener("click", () => {
+            window.remove();
+        });
+
+        window.addEventListener("click", (e) => {
+            if (e.target === window) {
+                window.remove();
+            }
+        });
+
+        content.append(editButton);
+        content.append(deleteButton);
+        content.append(exitButton);
+        window.append(content);
+
+        return window;
+    }
+
+    createEditTaskField(task, optionWindow) {
+        const editField = document.createElement("input");
+        editField.classList.add("input-field");
+        editField.value = task.textContent;
+
+        editField.addEventListener("keydown", async (e) => {
+            if (e.key === "Enter") {
+                const userId = sessionStorage.getItem("loggedInUserId");
+                const editedText = editField.value.trim();
+                try {
+                    const response = await fetch(`/api/tasks/${task.dataset.id}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "user-id": userId
+                        },
+                        body: JSON.stringify({ title: editedText })
+                    });
+
+                    if(response.ok){
+                        task.textContent = editedText;
+                        if(optionWindow) optionWindow.remove();
+                    }
+                } catch(err){
+                    console.error("Failed to edit task:", err);
+                }
+            }
+        });
+
+        return editField;
+    }
 }
 
 async function initializeApp() {
@@ -371,5 +463,5 @@ async function initializeApp() {
     }
 }
 
-
+// Fin kod
 initializeApp();
