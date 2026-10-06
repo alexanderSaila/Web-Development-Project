@@ -10,13 +10,15 @@
         <h3 class="title">LOGIN</h3>
         <section id="login-box" class="container">
             <form id="login-form" class="input-form">
-                <input type="text" id="email" placeholder="email" class="input-field" required>
+                <label for="email" id="hidden">Email:</label>
+                <input type="email" id="email" placeholder="email" class="input-field" required>
+                <label for="password" id="hidden">Password:</label>
                 <input type="password" id="password" placeholder="password" class="input-field" required>
                 <button type="submit" class="submit-button">Submit</button>
+                <button type="button" class="register-button" onclick="window.location.href='/register.html'">Register</button>
             </form>
-            <a id="register-user" href="/register.html">Register</a>
         </section>
-        <p id = "error-message" class="error-message"></p>
+        <p id = "error-message" role="alert"></p>
     </div>
 
     <script>
@@ -37,16 +39,23 @@
 
                 if(response.ok){
                     const user = await response.json();
-                    
-                    sessionStorage.setItem("loggedInUserId", user.id);
+                    console.log("User object:", user);
+                    localStorage.setItem("firstName", user.firstName);
 
-                    window.location.href = "/Calendar.html";
+                    if(user.is_admin) {
+                        window.location.href = "/admin";
+                    } else {
+                        window.location.href = "/Calendar.html";
+                    } 
+                } else { 
+                    const errorData = await response.json();
+                    document.getElementById("error-message").textContent = errorData.message || "Login failed. Please try again.";
                 }
             } catch (error) {
                 console.error("error logging in:", error);
-                document.getElementById("error-message").textContent = "Invalid email or password. Please try again.";
+                document.getElementById("error-message").textContent = "Network error. Please try again later.";
             }
-        });
+        }); 
     </script>
 </body>
 

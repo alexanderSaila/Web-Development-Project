@@ -1,4 +1,16 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    const userName = capitalize(localStorage.getItem("firstName") || "User");
+    document.getElementById("greeting").textContent = `Hello, ${userName}!`;
+});
 
+function logout() {
+    fetch('/logout', {
+        method: 'POST'
+    }).then(() => {
+        window.location.href = '/login.html';
+    })
+};
 
 class Calendar {
 
@@ -17,12 +29,16 @@ class Calendar {
     weekContainer = null;
     previousMonthButton = null;
     nextMonthButton = null;
+    myAccountButton = null;
 
     constructor() {
+        this.checkLoggedIn();
+
         this.selectedDate = new Date();
         this.scheduleSection = document.getElementById("schedule-section");
         this.previousMonthButton = document.getElementById("previous-month-button");
         this.nextMonthButton = document.getElementById("next-month-button");
+        this.myAccountButton = document.getElementById("account-button");
 
         this.weekContainer = document.createElement("div");
         this.scheduleSection.append(this.weekContainer);
@@ -34,10 +50,6 @@ class Calendar {
         this.nextMonthButton.addEventListener("click", () => {
             this.selectedDate.setMonth(this.selectedDate.getMonth() + 1);
             this.displayMonth();
-        });
-        document.getElementById("log-out-button").addEventListener("click", () => {
-            sessionStorage.removeItem("loggedInUserId");
-            window.location.href = "login.html";
         });
 
         this.setUpShare();
@@ -152,14 +164,6 @@ class Calendar {
             daySection.addEventListener("click", () => {
                 this.changeFocusedDay(daySection);
             });
-            daySection.addEventListener("mouseenter", () => {
-                daySection.style.background = "#fffd91";
-                daySection.style.border = "1px solid green";
-            })
-            daySection.addEventListener("mouseleave", () => {
-                daySection.style.background = "";
-                daySection.style.border = "";
-            })
         }
         else {
             dayHeader.classList.add("day-header", "empty");
@@ -169,15 +173,26 @@ class Calendar {
         return daySection;
     }
 
+    async checkLoggedIn() {
+        try {
+            const response = await fetch("api/logged-in", {
+                method: "GET"
+            });
+            if (response.status === 401) {
+                window.location.href = "/login.html"
+            }
+        } catch (e) {
+            console.error("Not logged in", e);
+        }
+    }
+
     async loadTasks() {
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
-        const userId = sessionStorage.getItem("loggedInUserId");
 
         try {
             const result = await fetch(`/api/tasks/${year}/${month}`, {
                 method: "GET",
-                headers: { "user-id": userId }
             });
 
             if (!result.ok) return;
@@ -188,7 +203,7 @@ class Calendar {
 
                 const daySection = document.getElementById(task.task_date);
                 if (daySection) {
-                    const tempTask = this.createTaskElement(task.title, task.id, task.userId, task.name);
+                    const tempTask = this.createTaskElement(task.title, task.id, task.is_owner, task.name);
 
                     daySection.append(tempTask);
                 }
@@ -204,21 +219,19 @@ class Calendar {
         const taskDate = this.selectedDay.id;
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
-        const userId = sessionStorage.getItem("loggedInUserId");
 
         try {
             const response = await fetch(`api/tasks/${year}/${month}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "user-id": userId
                 },
                 body: JSON.stringify({ task_date: taskDate, title: title })
             });
 
             if (response.ok) {
                 const savedTask = await response.json();
-                const finishedTask = this.createTaskElement(savedTask.title, savedTask.id);
+                const finishedTask = this.createTaskElement(savedTask.title, savedTask.id, savedTask.is_owner);
                 this.selectedDay.insertBefore(finishedTask, parentElement);
             }
         } catch (e) {
@@ -229,12 +242,10 @@ class Calendar {
     async deleteTask(id, element) {
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
-        const userId = sessionStorage.getItem("loggedInUserId");
 
         try {
             const response = await fetch(`/api/tasks/${year}/${month}/${id}`, {
                 method: "DELETE",
-                headers: { "user-id": userId }
             });
 
             if (response.ok) {
@@ -248,14 +259,13 @@ class Calendar {
     }
 
     async shareTask(email) {
-        const loggedInUserId = sessionStorage.getItem("loggedInUserId");
 
         try {
             const response = await fetch("/api/tasks/share", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "user-id": loggedInUserId
+                    //"user-id": loggedInUserId
                 },
                 body: JSON.stringify({ email: email })
             });
@@ -340,16 +350,16 @@ class Calendar {
         return null;
     }
 
-    createTaskElement(inputText, id = null, creatorId, creatorName) {
+    createTaskElement(inputText, id = null, is_owner, ownerName = null) {
         const finishedTask = document.createElement("li");
         finishedTask.classList.add("day-task");
         finishedTask.textContent = inputText;
         if (id) finishedTask.dataset.id = id;
 
 
-        if (creatorId != sessionStorage.getItem("loggedInUserId")) {
+        if (!is_owner) {
             finishedTask.classList.add("immutable");
-            finishedTask.textContent += ` (${creatorName})`;
+            finishedTask.textContent += ` (${ownerName})`;
         } else {
             finishedTask.classList.add("interractable");
             finishedTask.addEventListener("click", async (e) => {
@@ -434,14 +444,14 @@ class Calendar {
 
         editField.addEventListener("keydown", async (e) => {
             if (e.key === "Enter") {
-                const userId = sessionStorage.getItem("loggedInUserId");
+                //const userId = sessionStorage.getItem("loggedInUserId");
                 const editedText = editField.value.trim();
                 try {
                     const response = await fetch(`/api/tasks/${task.dataset.id}`, {
                         method: "PUT",
                         headers: {
                             "Content-Type": "application/json",
-                            "user-id": userId
+                            //"user-id": userId
                         },
                         body: JSON.stringify({ title: editedText })
                     });
@@ -460,16 +470,4 @@ class Calendar {
     }
 }
 
-async function initializeApp() {
-
-    const userId = sessionStorage.getItem("loggedInUserId");
-
-    if (userId) {
-        const calendar = new Calendar();
-    } else {
-        window.location.href = "/login.html"
-    }
-}
-
-// Fin kod
-initializeApp();
+new Calendar();

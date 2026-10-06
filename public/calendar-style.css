@@ -1,9 +1,25 @@
+:root {
+    --section-divider-theme: #0358a8;
+    --theme-dark: rgb(106, 170, 253);
+    --theme-light: rgba(106, 170, 253, 0.541);
+    --hover-green: rgb(69, 235, 3); 
+    --hover-day: rgb(197, 255, 174);
+    --selected-day: rgb(134, 229, 134);
+    --border-gray: #d4d4d4;/
+}
+
+#error-message {
+    color: red;
+    font-weight: bold;
+    font-family: Comics Sans MS, Comic Sans, cursive; /* COMIC SANS LOOOOOOL */ 
+}
+
 .hidden {
     display: none;
 }
 
 .section {
-    border-top: dashed #a80303;
+    border-top: dashed var(--section-divider-theme);
     padding: 10px;
 }
 
@@ -12,11 +28,11 @@
     padding-left: 20px;
     padding-right: 20px;
 
-    background-color: rgb(255, 161, 148);
+    background-color: var(--theme-dark);
     border-radius: 20px;
 }
 
-.options-field{
+.options-field {
     position: absolute;
     right: 20px;
 }
@@ -33,12 +49,16 @@
     min-width: 100px;
     max-width: 200px;
     border: 1px solid black;
-    background-color: #FFCCCC;
+    background-color: var(--theme-light);
     margin: 2px;
     border-radius: 8px;
 
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+.day-section:hover{
+    background-color: var(--hover-day);
 }
 
 .day-section.empty {
@@ -47,14 +67,14 @@
 }
 
 .selected-day {
-    background: #ffef63;
+    background: var(--selected-day);
 }
 
 .day-header {
     text-align: center;
     margin-top: 0px;
     border-bottom: 1px solid black;
-    background-color: #ffb3b3;
+    background-color: var(--theme-dark);
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
 }
@@ -72,8 +92,9 @@
 }
 
 .day-task.interractable:hover {
-    color: blue;
     cursor: pointer;
+    background-color: var(--selected-day);
+    box-shadow: 0 2px 2px black;
 }
 
 .day-task.interractable:hover::marker {
@@ -108,44 +129,22 @@
     min-height: 20px;
     border-radius: 10px;
     border: transparent;
-    background: #ffb3b3;
+    background: var(--theme-dark);
 }
 
-.create-new-list {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 250px;
-    min-height: 350px;
-    border: dashed 1px gray;
-    background-color: rgb(236, 236, 236);
-    border-radius: 10px;
-}
-
-.create-new-list.highlight {
-    background-color: rgb(197, 255, 174);
-}
-
-.create-new-list-button {
-    background-color: rgb(187, 187, 187);
-    padding: 20px;
-    border: hidden;
-    border-radius: 30px;
-}
-
-.create-new-list-button:hover {
-    background-color: rgb(88, 230, 88);
+.interractive-button:hover {
+    background-color: var(--hover-green);
     cursor: pointer;
 }
 
-.task-option-window{
+.task-option-window {
     display: block;
-    position: fixed; 
+    position: fixed;
     z-index: 1000;
     left: 0;
     top: 0;
-    width: 100%; 
-    height: 100%; 
+    width: 100%;
+    height: 100%;
     background-color: rgba(5, 5, 5, 0.274);
 }
 
@@ -154,7 +153,7 @@
     background-color: white;
     padding: 10px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -162,12 +161,12 @@
 
 .share-window {
     display: none;
-    position: fixed; 
+    position: fixed;
     z-index: 1000;
     left: 0;
     top: 0;
-    width: 100%; 
-    height: 100%; 
+    width: 100%;
+    height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     align-items: center;
     justify-content: center;
@@ -178,7 +177,7 @@
     padding: 20px;
     border-radius: 8px;
     width: 300px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -193,8 +192,7 @@
 
 #submit-share {
     padding: 8px;
-    background-color: #007bff;
-    color: white;
+    background-color: var(--theme-dark);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -202,4 +200,42 @@
 
 #error-message {
     color: red;
+}
+
+.list-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.list-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 250px;
+    min-height: 350px;
+    border-radius: 10px;
+    border: solid 2px var(--theme-dark);
+    margin: 10px;
+}
+
+.list-box.empty {
+    border: dashed 1px gray;
+    background-color: rgb(236, 236, 236);
+}
+
+.list-box.highlight {
+    background-color: rgb(197, 255, 174);
+}
+
+.create-new-list-button {
+    background-color: rgb(187, 187, 187);
+    padding: 20px;
+    border: hidden;
+    border-radius: 30px;
+}
+
+.create-new-list-button:hover {
+    background-color: var(--hover-green);
+    cursor: pointer;
 }

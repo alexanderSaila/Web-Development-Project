@@ -2,14 +2,14 @@
 
 <head>
     <title>CO-CALENDAR</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="calendar-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="Calendar.js" defer></script>
     <script src="List.js" defer></script>
 </head>
 
 <body>
-    <h1 class="section-title">CO-CALENDAR</h1>
+    <h1 class="section-title" id="greeting">CO-CALENDAR</h1>
     <section id="schedule-section" class="section">
         <div style="display: flex; justify-content: center; gap: 8px; align-items: center;">
             <button id="previous-month-button" class="interractive-button">&lt;</button>
@@ -18,7 +18,8 @@
             <div class="options-field">
                 <button id="account-button" class="interractive-button"><i class="fas fa-user"></i> My account</button>
                 <button id="share-button" class="interractive-button"><i class="fas fa-share-nodes"></i> Share</button>
-                <button id="log-out-button" class="interractive-button"><i class="fas fa-right-from-bracket"></i> Log out</button>
+                <button onclick="logout()" class="interractive-button"><i class="fas fa-right-from-bracket"></i> Log
+                    out</button>
             </div>
             <div id="share-window" class="share-window">
                 <div class="share-content">
@@ -33,9 +34,11 @@
     </section>
     <section id="list-section" class="section">
         <h3 class="section-title">Lists</h3>
-        <section class="create-new-list">
-            <button id="create-new-list-button" class="create-new-list-button">Create New List</button>
-        </section>
+        <div class="list-container">
+            <div id="empty-list" class="list-box">
+                <button id="create-new-list-button" class="create-new-list-button">Create New List</button>
+            </div>
+        </div>
     </section>
 </body>
 <footer>

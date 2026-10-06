@@ -10,15 +10,24 @@
         <h3 class="title">REGISTER NEW USER</h3>
         <section id="register-box" class="container">
             <form id="register-form" class="input-form">
-                <input type="first-name" id="first-name" placeholder="First name" class="input-field" required>
-                <input type="last-name" id="last-name" placeholder="Last name" class="input-field" required>
-                <input type="text" id="email" placeholder="email" class="input-field" required>
+
+                <label for="first-name" id="hidden">First Name:</label>
+                <input type="text" id="first-name" placeholder="First name" class="input-field" required>
+
+                <label for="last-name" id="hidden">Last Name:</label>
+                <input type="text" id="last-name" placeholder="Last name" class="input-field" required>
+                
+                <label for="email" id="hidden">Email:</label>
+                <input type="email" id="email" placeholder="email" class="input-field" required>
+                
+                <label for="password" id="hidden">Password:</label>
                 <input type="password" id="password" placeholder="password" class="input-field" required>
+                
                 <button type="submit" class="submit-button">Submit</button>
+                <button type="button" class="register-button" onclick="window.location.href='/login.html'">Back</button>
             </form>
-            <a id="register-user" href="/login.html">exit</a>
         </section>
-        <p id="error-message"></p>
+        <p id="error-message" role="alert"></p>
     </div>
 
     <script>
@@ -49,10 +58,13 @@
                     console.log(data.message);
 
                     window.location.href = "/login.html";
+                } else {
+                    const errorData = await response.json();
+                    document.getElementById("error-message").textContent = errorData.message || "Registration failed. Please try again.";
                 }
             } catch (error) {
                 console.error("error logging in:", error);
-                document.getElementById("error-message").textContent = "Error registering user. Please try again.";
+                document.getElementById("error-message").textContent = "Network error. Please try again later.";
             }
         });
     </script>

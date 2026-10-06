@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -16,6 +17,12 @@ const pool = mariadb.createPool({
     database: process.env.DB_NAME,
     connectionLimit: process.env.DB_CONNECTION_LIMIT
 });
+
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(cookieParser());
 
 // ***********************
 // HELPERS
@@ -33,6 +40,150 @@ async function canAccessList(listId, userId) {
     return rows.length > 0;
 }
 
+
+// ***********************
+// ADMIN PAGE
+// ***********************
+
+
+// ***********************
+// ADMIN PAGE - LOGOUT
+// ***********************
+app.post('/logout', (req, res) => {
+    res.clearCookie("user-id", {
+        httpOnly: true,
+        sameSite: "strict",
+        secure: true
+    });
+    res.status(200).json({ message: "Logged out successfully" });
+});
+
+// ***********************
+// CHECK IF USER IS ADMIN
+// ***********************
+app.get('/admin', async (req, res) => {
+    const loggedInUserId = req.cookies["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    const result = await pool.query(
+        "SELECT is_admin FROM User WHERE uID = ?",
+        [loggedInUserId]
+    );
+
+    if (result.length === 0 || !result[0].is_admin) {
+        return res.status(403).json({ error: "Forbidden. Admin access required." });
+    }
+
+    res.sendFile(path.join(__dirname, 'Admin.html'));
+});
+
+// ***********************
+// ADMIN PAGE - GET ALL USERS
+// ***********************
+app.get('/admin/users', async (req, res) => {
+    const loggedInUserId = req.cookies["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    try {
+        const adminCheck = await pool.query(
+            "SELECT is_admin FROM User WHERE uID = ?",
+            [loggedInUserId]
+        );
+
+        if (adminCheck.length === 0 || !adminCheck[0].is_admin) {
+            return res.status(403).json({ error: "Forbidden. Admin access required." });
+        }
+        
+        const users = await pool.query(
+            "SELECT uID, fName, lName, email, is_admin FROM User"
+        );
+        res.json(users);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to read users from database" });
+    }
+});
+
+
+// ***********************
+// ADMIN PAGE - DELETE USER
+// ***********************
+app.delete('/admin/users/:userId', async (req, res) => {
+    const loggedInUserId = req.cookies["user-id"];
+    const { userId } = req.params;
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    try {
+        const adminCheck = await pool.query(
+            "SELECT is_admin FROM User WHERE uID = ?",
+            [loggedInUserId]
+        );
+
+        if (adminCheck.length === 0 || !adminCheck[0].is_admin) {
+            return res.status(403).json({ error: "Forbidden. Admin access required." });
+        }
+
+        if (Number(userId) === Number(loggedInUserId)) {
+            return res.status(400).json({ error: "Admins cannot delete themselves" });
+        }
+
+        const result = await pool.query(
+            "DELETE FROM User WHERE uID = ?",
+            [userId]
+        );
+        res.status(200).json({ message: "User deleted successfully" });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to delete user from database" });
+    }
+});
+
+
+
+// ***********************
+// ADMIN PAGE - MAKE USER ADMIN
+// ***********************
+app.put('/admin/users/:userId', async (req, res) => {
+    const loggedInUserId = req.cookies["user-id"];
+    const { userId } = req.params;
+    const { is_admin } = req.body;
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    try {
+        const adminCheck = await pool.query(
+            "SELECT is_admin FROM User WHERE uID = ?",
+            [loggedInUserId]
+        );
+
+        if (adminCheck.length === 0 || !adminCheck[0].is_admin) {
+            return res.status(403).json({ error: "Forbidden. Admin access required." });
+        }
+
+        const result = await pool.query(
+            "UPDATE User SET is_admin = ? WHERE uID = ?",
+            [is_admin, userId]
+        );
+        res.status(200).json({ message: "User admin status updated successfully" });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to update user admin status in database" });
+    }
+});
+
+
+// ***********************
 
 // **********************
 // RATE LIMITERS
@@ -57,9 +208,6 @@ const otherLimiter = rateLimit({
     message: "Too many requests from this IP, please try again after 15 minutes"
 });
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
 
 
@@ -80,7 +228,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ***********************
 
 app.get("/api/shares/pending", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -113,7 +261,7 @@ app.get("/api/shares/pending", async (req, res) => {
 // ***********************
 
 app.post("/api/lists/share/accept", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -148,7 +296,7 @@ app.post("/api/lists/share/accept", async (req, res) => {
 // ACCEPT TASK SHARE
 // ***********************
 app.post("/api/tasks/share/accept", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -185,7 +333,7 @@ app.post("/api/tasks/share/accept", async (req, res) => {
 // GET TASKS FOR SPECIFIC YEAR AND MONTH
 // **********************
 app.get('/api/tasks/:year/:month', async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
     
     if (!loggedInUserId) {
         console.log("Unauthorized. Please log in.");
@@ -195,12 +343,12 @@ app.get('/api/tasks/:year/:month', async (req, res) => {
     const { year, month } = req.params;
 
     const query = `
-        SELECT Task.tID as id, Task.description as title, DATE_FORMAT(Task.date, '%Y-%m-%d') as task_date, Task.uID as userId, User.fName as name
+        SELECT Task.tID as id, Task.description as title, DATE_FORMAT(Task.date, '%Y-%m-%d') as task_date, Task.uID as userId, User.fName as name, TRUE as is_owner
         FROM Task 
         JOIN User ON Task.uID = User.uID
         WHERE Task.uID = ? AND YEAR(Task.date) = ? AND MONTH(Task.date) = ?
         UNION
-        SELECT Task.tID as id, Task.description as title, DATE_FORMAT(Task.date, '%Y-%m-%d') as task_date, Task.uID as userId, User.fName as name
+        SELECT Task.tID as id, Task.description as title, DATE_FORMAT(Task.date, '%Y-%m-%d') as task_date, Task.uID as userId, User.fName as name, FALSE as is_owner
         FROM Task
         JOIN UserSharesTask ON Task.uID = UserSharesTask.sharer_uID
         JOIN User ON Task.uID = User.uID
@@ -280,8 +428,16 @@ app.post("/api/login", loginLimiter, async (req, res) => {
         const user = {
             id: resultUser.uID,
             firstName: resultUser.fName,
-            lastName: resultUser.lName
+            lastName: resultUser.lName,
+            is_admin: resultUser.is_admin
         };
+
+        res.cookie("user-id", resultUser.uID, {
+            httpOnly: true,
+            sameSite: "strict",
+            maxAge: 3600000,
+            secure: false 
+        });
 
         res.status(200).json(user);
     } catch (e) {
@@ -290,12 +446,25 @@ app.post("/api/login", loginLimiter, async (req, res) => {
     }
 });
 
+// **********************
+// CHECK USER IS LOGGED IN
+// **********************
+app.get("/api/logged-in", otherLimiter, async(req,res) =>{
+    const loggedInUserId = req.cookies["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+    else{
+        return res.status(200).json({ message: "User is logged in" });
+    }
+});
 
 // **********************
 // CHANGE PASSWORD
 // **********************
 app.post("/api/change-password", otherLimiter, async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
     const { currentPassword, newPassword } = req.body;
 
     if (!loggedInUserId) {
@@ -342,7 +511,7 @@ app.post("/api/change-password", otherLimiter, async (req, res) => {
 // SHARE TASKS WITH ANOTHER USER
 // ***********************
 app.post("/api/tasks/share", otherLimiter, async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -401,7 +570,7 @@ app.post("/api/tasks/share", otherLimiter, async (req, res) => {
 // ADD NEW TASK
 // **********************
 app.post("/api/tasks/:year/:month", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
     
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -437,7 +606,7 @@ app.post("/api/tasks/:year/:month", async (req, res) => {
 // DELETE TASK
 // **********************
 app.delete("/api/tasks/:year/:month/:id", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
     
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -466,7 +635,7 @@ app.delete("/api/tasks/:year/:month/:id", async (req, res) => {
 // UPDATE TASK
 // **********************
 app.put("/api/tasks/:id", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -511,7 +680,7 @@ app.put("/api/tasks/:id", async (req, res) => {
 // GET ALL LISTS
 // ***********************
 app.get("/api/lists", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -544,7 +713,7 @@ app.get("/api/lists", async (req, res) => {
 // GET ELEMENTS IN LIST
 // ***********************
 app.get("/api/lists/:listId/elements", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -580,7 +749,7 @@ app.get("/api/lists/:listId/elements", async (req, res) => {
 // ADD LIST
 // ***********************
 app.post("/api/lists", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -608,7 +777,7 @@ app.post("/api/lists", async (req, res) => {
 // DELETE LIST
 // ***********************
 app.delete("/api/lists/:id", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -635,7 +804,7 @@ app.delete("/api/lists/:id", async (req, res) => {
 // UPDATE LIST
 // ***********************
 app.put("/api/lists/:id", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -673,7 +842,7 @@ app.put("/api/lists/:id", async (req, res) => {
 // SHARE LIST WITH ANOTHER USER
 // ***********************
 app.post("/api/lists/:listId/share", otherLimiter, async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -728,7 +897,7 @@ app.post("/api/lists/:listId/share", otherLimiter, async (req, res) => {
 // ADD ELEMENT TO LIST
 // ***********************
 app.post("/api/lists/:listId/elements", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -770,7 +939,7 @@ app.post("/api/lists/:listId/elements", async (req, res) => {
 // DELETE ELEMENT FROM LIST
 // ***********************
 app.delete("/api/lists/:listId/elements/:elementId", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -804,7 +973,7 @@ app.delete("/api/lists/:listId/elements/:elementId", async (req, res) => {
 // UPDATE ELEMENT IN LIST
 // ***********************
 app.put("/api/lists/:listId/elements/:elementId", async (req, res) => {
-    const loggedInUserId = req.headers["user-id"];
+    const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });

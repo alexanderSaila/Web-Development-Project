@@ -2,10 +2,15 @@ body {
     display: grid;
     place-items: center;
     min-height: 100vh;
+    background: linear-gradient(135deg, hsl(211, 100%, 50%), hsl(211, 100%, 80%));
+}
+
+#hidden {
+    display: none;
 }
 
 .center-box {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -14,20 +19,20 @@ body {
     right: 0;
     max-width: 250px;
     max-height: 300px;
-
     align-items: center;
     justify-content: center;
+    background-color: hsl(0, 0%, 100%);
 
 
     margin: auto;
     padding: 20px;
-    border: 5px solid hsl(211, 100%, 50%);
+    border: 5px solid hsl(211, 100%, 20%);
     border-radius: 10px;
 }
 
 .title {
     padding: 1px;
-    margin-top: 1px;
+    margin-top: 10px;
 }
 
 .container {
@@ -48,14 +53,38 @@ body {
 
 .input-field {
     margin-bottom: 10px;
+    padding: 10px, 12px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
 }
 
-.submit-button {
+.inpout-field:focus {
+    border-color: hsl(211, 100%, 50%);
+    outline: none;
+}
+
+.input-field:hover {
+    border-color: hsl(211, 100%, 50%);
+}
+
+.submit-button, .register-button {
     width: 100%;
     padding: 8px;
-    background-color: hsl(211, 100%, 50%);
+    background: linear-gradient(to bottom, hsl(211, 100%, 50%), hsl(211, 100%, 70%));
     color: white;
-    border: none;
+    border: 2px solid transparent;  
     border-radius: 4px;
     cursor: pointer;
+}
+
+.submit-button:hover, .register-button:hover {
+    border-color: black;  
+}
+
+
+.register-button {
+    background-color: hsl(120, 100%, 40%);
+    margin-top: 10px;
 }
