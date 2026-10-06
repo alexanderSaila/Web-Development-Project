@@ -195,13 +195,15 @@ app.get('/api/tasks/:year/:month', async (req, res) => {
     const { year, month } = req.params;
 
     const query = `
-        SELECT tID as id, description as title, DATE_FORMAT(date, '%Y-%m-%d') as task_date, uID as userId
+        SELECT Task.tID as id, Task.description as title, DATE_FORMAT(Task.date, '%Y-%m-%d') as task_date, Task.uID as userId, User.fName as name
         FROM Task 
-        WHERE uID = ? AND YEAR(date) = ? AND MONTH(date) = ?
+        JOIN User ON Task.uID = User.uID
+        WHERE Task.uID = ? AND YEAR(Task.date) = ? AND MONTH(Task.date) = ?
         UNION
-        SELECT Task.tID as id, Task.description as title, DATE_FORMAT(Task.date, '%Y-%m-%d') as task_date, uID as userId
+        SELECT Task.tID as id, Task.description as title, DATE_FORMAT(Task.date, '%Y-%m-%d') as task_date, Task.uID as userId, User.fName as name
         FROM Task
         JOIN UserSharesTask ON Task.uID = UserSharesTask.sharer_uID
+        JOIN User ON Task.uID = User.uID
         WHERE UserSharesTask.shared_with_uID = ? 
         AND UserSharesTask.is_accepted = TRUE
         AND YEAR(Task.date) = ? 

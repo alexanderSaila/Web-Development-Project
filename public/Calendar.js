@@ -183,11 +183,12 @@ class Calendar {
             if (!result.ok) return;
 
             const tasks = await result.json();
+            console.log(tasks);
             for (const task of tasks) {
 
                 const daySection = document.getElementById(task.task_date);
                 if (daySection) {
-                    const tempTask = this.createTaskElement(task.title, task.id);
+                    const tempTask = this.createTaskElement(task.title, task.id, task.userId, task.name);
 
                     daySection.append(tempTask);
                 }
@@ -339,21 +340,28 @@ class Calendar {
         return null;
     }
 
-    createTaskElement(inputText, id = null) {
+    createTaskElement(inputText, id = null, creatorId, creatorName) {
         const finishedTask = document.createElement("li");
         finishedTask.classList.add("day-task");
         finishedTask.textContent = inputText;
         if (id) finishedTask.dataset.id = id;
 
-        finishedTask.addEventListener("click", async (e) => {
-            e.stopPropagation();
 
-            const editTaskWindow = document.getElementById("edit-task-window");
-            const optionWindow = this.createOptionWindow(finishedTask);
+        if (creatorId != sessionStorage.getItem("loggedInUserId")) {
+            finishedTask.classList.add("immutable");
+            finishedTask.textContent += ` (${creatorName})`;
+        } else {
+            finishedTask.classList.add("interractable");
+            finishedTask.addEventListener("click", async (e) => {
+                e.stopPropagation();
 
-            editTaskWindow.append(optionWindow);
+                const editTaskWindow = document.getElementById("edit-task-window");
+                const optionWindow = this.createOptionWindow(finishedTask);
 
-        });
+                editTaskWindow.append(optionWindow);
+
+            });
+        }
 
         return finishedTask;
     }
@@ -438,11 +446,11 @@ class Calendar {
                         body: JSON.stringify({ title: editedText })
                     });
 
-                    if(response.ok){
+                    if (response.ok) {
                         task.textContent = editedText;
-                        if(optionWindow) optionWindow.remove();
+                        if (optionWindow) optionWindow.remove();
                     }
-                } catch(err){
+                } catch (err) {
                     console.error("Failed to edit task:", err);
                 }
             }

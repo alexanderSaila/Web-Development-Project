@@ -3,6 +3,7 @@
 <head>
     <title>CO-CALENDAR</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="Calendar.js" defer></script>
     <script src="List.js" defer></script>
 </head>
@@ -11,12 +12,13 @@
     <h1 class="section-title">CO-CALENDAR</h1>
     <section id="schedule-section" class="section">
         <div style="display: flex; justify-content: center; gap: 8px; align-items: center;">
-            <button id="previous-month-button" class="navigate-week">&lt;</button>
+            <button id="previous-month-button" class="interractive-button">&lt;</button>
             <h3 id="month-name" class="section-title">Schedule</h3>
-            <button id="next-month-button" class="navigate-week">&gt;</button>
+            <button id="next-month-button" class="interractive-button">&gt;</button>
             <div class="options-field">
-                <button id="share-button">Share</button>
-                <button id="log-out-button">Log out</button>
+                <button id="account-button" class="interractive-button"><i class="fas fa-user"></i> My account</button>
+                <button id="share-button" class="interractive-button"><i class="fas fa-share-nodes"></i> Share</button>
+                <button id="log-out-button" class="interractive-button"><i class="fas fa-right-from-bracket"></i> Log out</button>
             </div>
             <div id="share-window" class="share-window">
                 <div class="share-content">

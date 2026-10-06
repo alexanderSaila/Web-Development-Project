@@ -71,13 +71,21 @@
     content: '📌 ';
 }
 
-.day-task:hover {
-    color: red;
+.day-task.interractable:hover {
+    color: blue;
     cursor: pointer;
 }
 
-.day-task:hover::marker {
-    content: '❌ ';
+.day-task.interractable:hover::marker {
+    content: '📝 ';
+}
+
+.day-task.immutable {
+    color: gray;
+}
+
+.day-task.immutable:hover {
+    cursor: not-allowed;
 }
 
 .add-item-button {
@@ -95,10 +103,12 @@
     margin-bottom: 5px;
 }
 
-.navigate-week {
+.interractive-button {
     min-width: 50px;
-    max-height: 25px;
-    margin-top: 10px;
+    min-height: 20px;
+    border-radius: 10px;
+    border: transparent;
+    background: #ffb3b3;
 }
 
 .create-new-list {

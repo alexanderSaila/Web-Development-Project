@@ -1,11 +1,8 @@
--- OBS: raderar hela databasen och all data i den.
--- Använd bara under utveckling när du vill börja om från början.
 DROP DATABASE IF EXISTS project_calendar;
 
 CREATE DATABASE IF NOT EXISTS project_calendar;
 USE project_calendar;
 
--- 1. Användare
 CREATE TABLE IF NOT EXISTS User (
     uID INT AUTO_INCREMENT PRIMARY KEY,
     fName VARCHAR(100) NOT NULL,
@@ -14,7 +11,6 @@ CREATE TABLE IF NOT EXISTS User (
     password_hash VARCHAR(255) NOT NULL
 );
 
--- 2. Uppgifter i kalendern (User 1 – 0..* Task)
 CREATE TABLE IF NOT EXISTS Task (
     tID INT AUTO_INCREMENT PRIMARY KEY,
     description TEXT NOT NULL,
@@ -23,7 +19,6 @@ CREATE TABLE IF NOT EXISTS Task (
     FOREIGN KEY (uID) REFERENCES User(uID) ON DELETE CASCADE
 );
 
--- 3. Listor (User 1 – 0..* List)
 CREATE TABLE IF NOT EXISTS List (
     lID INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -31,7 +26,6 @@ CREATE TABLE IF NOT EXISTS List (
     FOREIGN KEY (uID) REFERENCES User(uID) ON DELETE CASCADE
 );
 
--- 4. Element i en lista (List 1 – 0..* ListElement)
 CREATE TABLE IF NOT EXISTS ListElement (
     leID INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -41,7 +35,6 @@ CREATE TABLE IF NOT EXISTS ListElement (
     FOREIGN KEY (lID) REFERENCES List(lID) ON DELETE CASCADE
 );
 
--- 5. Delning av ALLA en användares uppgifter med en annan användare
 CREATE TABLE IF NOT EXISTS UserSharesTask (
     sharer_uID INT NOT NULL,
     shared_with_uID INT NOT NULL,
@@ -51,7 +44,6 @@ CREATE TABLE IF NOT EXISTS UserSharesTask (
     FOREIGN KEY (shared_with_uID) REFERENCES User(uID) ON DELETE CASCADE
 );
 
--- 6. Delning av ALLA en användares listor med en annan användare
 CREATE TABLE IF NOT EXISTS UserSharesList (
     sharer_uID INT NOT NULL,
     shared_with_uID INT NOT NULL,
