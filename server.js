@@ -891,7 +891,7 @@ app.put("/api/lists/:id", async (req, res) => {
 // ***********************
 // SHARE LIST WITH ANOTHER USER
 // ***********************
-app.post("/api/lists/:listId/share", otherLimiter, async (req, res) => {
+app.post("/api/lists/share", otherLimiter, async (req, res) => {
     const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {

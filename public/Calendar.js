@@ -82,8 +82,11 @@ class Calendar {
 
         document.getElementById("submit-share").addEventListener("click", () => {
             const email = document.getElementById("share-email").value.trim();
+            const sendTasks = document.getElementById("share-tasks-checkbox");
+            const sendLists = document.getElementById("share-lists-checkbox");
+
             if (email) {
-                this.shareTask(email);
+                this.shareElements(email, sendTasks, sendLists);
 
                 shareWindow.style.display = "none";
                 document.getElementById("share-email").value = "";
@@ -267,23 +270,44 @@ class Calendar {
         }
     }
 
-    async shareTask(email) {
+    async shareElements(email, willShareTasks, willShareLists) {
 
-        try {
-            const response = await fetch("/api/tasks/share", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    //"user-id": loggedInUserId
-                },
-                body: JSON.stringify({ email: email })
-            });
+        if (willShareTasks.checked) {
+            try {
+                const response = await fetch("/api/tasks/share", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email })
+                });
 
-            if (response.ok) {
-                console.log(response.message);
+                if (response.ok) {
+                    const data = await response.json()
+                    console.log(data.message);
+                }
+            } catch (e) {
+                console.error("Failed to share:", e);
             }
-        } catch (e) {
-            console.error("Failed to share:", e);
+        }
+
+        if (willShareLists.checked) {
+            try {
+                const response = await fetch("/api/lists/share", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                if (response.ok) {
+                    const data = await response.json()
+                    console.log(data.message);
+                }
+            } catch (e) {
+                console.error("Failed to share:", e);
+            }
         }
     }
 
