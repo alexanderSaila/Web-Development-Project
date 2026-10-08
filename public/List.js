@@ -28,6 +28,7 @@ function createListBox(list) {
     listBox.id = `list-${list.id}`;
 
     const titleElement = document.createElement("h4");
+    titleElement.classList.add("list-title");
     titleElement.textContent = list.title;
 
     listBox.appendChild(titleElement);

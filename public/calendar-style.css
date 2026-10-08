@@ -231,6 +231,14 @@
     background-color: rgb(197, 255, 174);
 }
 
+.list-title {
+    border-bottom: solid 2px var(--theme-dark);
+    padding-bottom: 15px;
+    width: 100%;
+    align-self: stretch;
+    text-align: center;
+}
+
 .create-new-list-button {
     background-color: rgb(187, 187, 187);
     padding: 20px;
