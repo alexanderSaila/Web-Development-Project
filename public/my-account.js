@@ -159,7 +159,7 @@ shareRequestButton.addEventListener("click", async () => {
 });
 
 async function acceptShareRequest(sharerId, type) {
-    const endPoint = type === "list" ? "/api/lists/share/accept" : "/api/share/accept";
+    const endPoint = type === "list" ? "/api/lists/share/accept" : "/api/tasks/share/accept";
     const response = await fetch(endPoint, {
         method: "POST",
         body: JSON.stringify({ sharerId }),
@@ -169,9 +169,9 @@ async function acceptShareRequest(sharerId, type) {
     });
 
     if (response.ok) {
-        popUpWindowErrorMessage.textContent = "";
+        popupWindowErrorMessage.textContent = "";
     } else {
-        popUpWindowErrorMessage.textContent = "Failed to accept share request. Please try again.";
+        popupWindowErrorMessage.textContent = "Failed to accept share request. Please try again.";
     }
 }    
 
