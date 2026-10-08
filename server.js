@@ -535,6 +535,24 @@ app.put("/api/change-name", otherLimiter, async (req, res) => {
     }
 });
 
+app.delete("/api/delete-account", otherLimiter, async (req, res) => {
+    const loggedInUserId = req.cookies["user-id"];
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    try {
+        await pool.query(
+            "DELETE FROM User WHERE uID = ?",
+            [loggedInUserId]
+        );
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({ error: "Failed to delete account" });
+    }
+});
+
 
 // ***********************
 // SHARE TASKS WITH ANOTHER USER

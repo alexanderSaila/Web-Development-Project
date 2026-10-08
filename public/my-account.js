@@ -187,7 +187,13 @@ async function requestChangeName() {
 }
 
 async function requestDeleteAccount() {
-    
+    try {
+        const response = await fetch("/api/delete-account", {
+            method: "DELETE"
+        });
+    } catch (error) {
+        console.error("Error deleting account:", error);
+    }
 }
 
 async function loadShareRequests() {
