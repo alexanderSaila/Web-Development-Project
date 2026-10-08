@@ -231,12 +231,12 @@ async function requestChangeName() {
     });
 
     if (response.ok) {
-        popUpWindowErrorMessage.textContent = "";
+        popupWindowErrorMessage.textContent = "";
         hidePopUpWindow();
 
         localStorage.setItem("firstName", newName);
     } else {
-        popUpWindowErrorMessage.textContent = "Failed to change name. Please try again.";
+        popupWindowErrorMessage.textContent = "Failed to change name. Please try again.";
     }
 }
 
@@ -247,11 +247,11 @@ async function requestDeleteAccount() {
         });
 
         if (response.ok) {
-        popUpWindowErrorMessage.textContent = "";
+        popupWindowErrorMessage.textContent = "";
         hidePopUpWindow();
         logout();
     } else {
-        popUpWindowErrorMessage.textContent = "Failed to delete account. Please try again.";
+        popupWindowErrorMessage.textContent = "Failed to delete account. Please try again.";
     }
     } catch (error) {
         console.error("Error deleting account:", error);
