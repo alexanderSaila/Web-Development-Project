@@ -5,7 +5,7 @@ body {
     background: linear-gradient(135deg, hsl(211, 100%, 50%), hsl(211, 100%, 80%));
 }
 
-#hidden {
+.hidden {
     display: none;
 }
 
@@ -60,7 +60,7 @@ body {
     font-family: Arial, sans-serif;
 }
 
-.inpout-field:focus {
+.input-field:focus {
     border-color: hsl(211, 100%, 50%);
     outline: none;
 }
@@ -87,4 +87,13 @@ body {
 .register-button {
     background-color: hsl(120, 100%, 40%);
     margin-top: 10px;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 10px;
 }
