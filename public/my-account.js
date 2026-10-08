@@ -159,7 +159,7 @@ shareRequestButton.addEventListener("click", async () => {
 });
 
 async function acceptShareRequest(sharerId, type) {
-    const endPoint = type === "list" ? "/api/lists/share/accept" : "/api/share/accept";
+    const endPoint = type === "list" ? "/api/lists/share/accept" : "/api/tasks/share/accept";
     const response = await fetch(endPoint, {
         method: "POST",
         body: JSON.stringify({ sharerId }),
@@ -169,14 +169,14 @@ async function acceptShareRequest(sharerId, type) {
     });
 
     if (response.ok) {
-        popUpWindowErrorMessage.textContent = "";
+        popupWindowErrorMessage.textContent = "";
     } else {
-        popUpWindowErrorMessage.textContent = "Failed to accept share request. Please try again.";
+        popupWindowErrorMessage.textContent = "Failed to accept share request. Please try again.";
     }
 }    
 
 async function declineShareRequest(sharerId, type) {
-    popUpWindowErrorMessage.textContent = "Decline share request functionality is not implemented yet.";
+    popupWindowErrorMessage.textContent = "Decline share request functionality is not implemented yet.";
 }
 
 // Back
@@ -212,9 +212,9 @@ async function requestChangePassword() {
 
     if (response.ok) {
         hidePopUpWindow();
-        popUpWindowErrorMessage.textContent = "";
+        popupWindowErrorMessage.textContent = "";
     } else {
-        popUpWindowErrorMessage.textContent = "Failed to change password. Please try again.";
+        popupWindowErrorMessage.textContent = "Failed to change password. Please try again.";
     }
 }
 
@@ -231,12 +231,12 @@ async function requestChangeName() {
     });
 
     if (response.ok) {
-        popUpWindowErrorMessage.textContent = "";
+        popupWindowErrorMessage.textContent = "";
         hidePopUpWindow();
 
         localStorage.setItem("firstName", newName);
     } else {
-        popUpWindowErrorMessage.textContent = "Failed to change name. Please try again.";
+        popupWindowErrorMessage.textContent = "Failed to change name. Please try again.";
     }
 }
 
@@ -247,11 +247,11 @@ async function requestDeleteAccount() {
         });
 
         if (response.ok) {
-        popUpWindowErrorMessage.textContent = "";
+        popupWindowErrorMessage.textContent = "";
         hidePopUpWindow();
         logout();
     } else {
-        popUpWindowErrorMessage.textContent = "Failed to delete account. Please try again.";
+        popupWindowErrorMessage.textContent = "Failed to delete account. Please try again.";
     }
     } catch (error) {
         console.error("Error deleting account:", error);
