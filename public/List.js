@@ -22,6 +22,30 @@ else {
     console.log("NO BUTTON FOUND");
 }
 
+function createListElement(list) {
+    const listElement = document.createElement("div");
+    listElement.classList.add("list-box");
+    listElement.id = `list-${list.id}`;
+
+    const titleElement = document.createElement("h4");
+    titleElement.textContent = list.title;
+
+    listElement.appendChild(titleElement);
+    return listElement;
+}
+
+async function loadLists() {
+    const lists = await getListsFromBackend();
+    const container = emptyList.parentElement;
+
+    lists.forEach(list => {
+        const listElement = createListElement(list);
+        container.insertBefore(listElement, emptyList);
+    });
+}
+
+loadLists();
+
 function createNewList(callerElement) {
     const parent = callerElement.parentElement;
     const newList = document.createElement("div");
