@@ -14,6 +14,8 @@ const backdrop = document.getElementById("backdrop");
 backdrop.classList.add("hidden");
 const popUpWindowInputContainer = document.getElementById("popup-window-input-container");
 const popUpWindowHeader = document.getElementById("popup-window-header");
+const popupWindowErrorMessage = document.getElementById("popup-window-error-message");
+
 const requestList = document.getElementById("request-list");
 
 var POPUP_WINDOW_VISIBLE = false;
@@ -167,14 +169,14 @@ async function acceptShareRequest(sharerId, type) {
     });
 
     if (response.ok) {
-        alert("Share request accepted!");
+        popUpWindowErrorMessage.textContent = "";
     } else {
-        alert("Failed to accept share request. Please try again.");
+        popUpWindowErrorMessage.textContent = "Failed to accept share request. Please try again.";
     }
 }    
 
 async function declineShareRequest(sharerId, type) {
-    alert("Decline share request functionality is not implemented yet.");
+    popUpWindowErrorMessage.textContent = "Decline share request functionality is not implemented yet.";
 }
 
 // Back
@@ -209,9 +211,10 @@ async function requestChangePassword() {
     const data = await response.json();
 
     if (response.ok) {
-        alert("Password changed successfully!");
+        hidePopUpWindow();
+        popUpWindowErrorMessage.textContent = "";
     } else {
-        alert("Failed to change password. Please try again.");
+        popUpWindowErrorMessage.textContent = "Failed to change password. Please try again.";
     }
 }
 
@@ -228,12 +231,12 @@ async function requestChangeName() {
     });
 
     if (response.ok) {
-        alert("Name changed successfully!");
+        popUpWindowErrorMessage.textContent = "";
         hidePopUpWindow();
 
         localStorage.setItem("firstName", newName);
     } else {
-        alert("Failed to change name. Please try again.");
+        popUpWindowErrorMessage.textContent = "Failed to change name. Please try again.";
     }
 }
 
@@ -244,11 +247,11 @@ async function requestDeleteAccount() {
         });
 
         if (response.ok) {
-        alert("Account deleted successfully!");
-        window.location.href = "/login";
+        popUpWindowErrorMessage.textContent = "";
+        hidePopUpWindow();
         logout();
     } else {
-        alert("Failed to delete account. Please try again.");
+        popUpWindowErrorMessage.textContent = "Failed to delete account. Please try again.";
     }
     } catch (error) {
         console.error("Error deleting account:", error);
@@ -260,6 +263,7 @@ async function loadShareRequests() {
         const response = await fetch("/api/share/pending");
 
         if (!response.ok) {
+            popupWindowErrorMessage.textContent = "Failed to fetch share requests.";
             throw new Error("Failed to fetch share requests.");
         }
 
