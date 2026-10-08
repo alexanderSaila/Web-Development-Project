@@ -48,28 +48,75 @@ function createNewList(callerElement) {
     newList.append(titleInput);
     console.log("newList efter append:", newList);
     parent.insertBefore(newList, callerElement);
+
 }
 
-function getListsFromBackend() {
-    // Här kan du implementera logik för att hämta listor från backend
+async function getListsFromBackend() {
+    try {
+        const response = await fetch('/api/lists', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log("Fetched lists from backend:", data);
+            return data; // Return the fetched lists
+        } else {
+            console.error("Failed to fetch lists from backend:", data);
+            return []; // Return an empty array on failure
+        }
+    } catch (error) {
+        console.error("Error fetching lists from backend:", error);
+        return []; // Return an empty array on error
+    }
 }
 
-function saveListToBackend(title) {
+
+
+async function saveListToBackend(title) {
+    try {
+        const response = await fetch('/api/lists', {
+            method: 'POST',
+            body: JSON.stringify({ title }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log("Saved new list to backend:", data);
+            return data; // Return the saved list
+        } else {
+            console.error("Error saving new list to backend:", data);
+            return null; // Return null on failure
+        }
+    } catch (error) {
+        console.error("Error saving new list to backend:", error);
+        return null; // Return null on error
+    }
 }
 
-function deleteListFromBackend(listId) {
-    fetch(`/api/lists/${listId}`, {
-        method: 'DELETE',
-    }).then(response => {
+async function deleteListFromBackend(listId) {
+    try {
+        const response = await fetch(`/api/lists/${listId}`, {
+            method: 'DELETE',
+        });
         if (response.ok) {
             console.log(`List with ID ${listId} deleted successfully.`);
-            document.getElementById(`list-${listId}`).remove();
+            document.getElementById(`list-${listId}`)?.remove();
+            return true;
         } else {
             console.error(`Failed to delete list with ID ${listId}.`);
+            return false;
         }
-    }).catch(error => {
+    } catch (error) {
         console.error(`Error deleting list with ID ${listId}:`, error);
-    });
+        return false;
+    }
 }
 
 function updateListInBackend(listId, newTitle, isCompleted) {
