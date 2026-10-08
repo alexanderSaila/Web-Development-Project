@@ -33,6 +33,7 @@ function createListBox(list) {
 
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "Delete";
+    deleteButton.classList.add("delete-button");
     deleteButton.addEventListener("click", async () => {
         const confirmed = confirm(`Are you sure you want to delete the list "${list.title}"?`);
         if (confirmed) {
