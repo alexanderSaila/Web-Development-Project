@@ -209,6 +209,7 @@
 }
 
 .list-box {
+    position: relative;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -218,6 +219,23 @@
     border-radius: 10px;
     border: solid 2px var(--theme-dark);
     margin: 10px;
+}
+
+.delete-button {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: lightcoral;
+    border: solid 2px darkred;
+    color: white;
+    cursor: pointer;
+}
+
+.list-title-container {
+    position: relative;
+    width: 100%;
+    border-bottom: solid 2px var(--theme-dark);
 }
 
 .list-box.empty {
@@ -232,11 +250,9 @@
 }
 
 .list-title {
-    border-bottom: solid 2px var(--theme-dark);
-    padding-bottom: 15px;
-    width: 100%;
-    align-self: stretch;
     text-align: center;
+    margin:0;
+    padding: 12px 60px
 }
 
 .create-new-list-button {

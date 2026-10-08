@@ -32,7 +32,7 @@ function createListBox(list) {
     titleElement.textContent = list.title;
 
     const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete";
+    deleteButton.textContent = "X";
     deleteButton.classList.add("delete-button");
     deleteButton.addEventListener("click", async () => {
         const confirmed = confirm(`Are you sure you want to delete the list "${list.title}"?`);
@@ -45,9 +45,12 @@ function createListBox(list) {
             }
         }
     });
+    const titleDiv = document.createElement("div");
+    titleDiv.classList.add("list-title-container");
+    titleDiv.appendChild(titleElement);
+    titleDiv.appendChild(deleteButton);
 
-    listBox.appendChild(titleElement);
-    listBox.appendChild(deleteButton);
+    listBox.appendChild(titleDiv);
     return listBox;
 }
 
@@ -81,12 +84,7 @@ function createNewList(callerElement) {
                 // Spara till backend här
                 const savedList = await saveListToBackend(title);
                 if (savedList) {
-                    console.log("List saved to backend:", savedList);
-                    // Uppdatera listan i UI med den nya listan
-                    const titleElement = document.createElement("h4");
-                    titleElement.textContent = savedList.title; // Använd titeln från backend-svaret
-                    titleInput.replaceWith(titleElement);
-                    newList.id = `list-${savedList.id}`; // Sätt ID för den nya listan baserat på backend-svaret
+                    newList.replaceWith(createListBox(savedList));
                 } else {
                     console.error("Failed to save list to backend.");
                 }
