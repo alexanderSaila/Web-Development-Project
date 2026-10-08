@@ -38,10 +38,17 @@ function createNewList(callerElement) {
             const title = titleInput.value.trim();
             if (title) {
                 // Spara till backend här
-                await saveListToBackend(title);
-                const titleElement = document.createElement("h4");
-                titleElement.textContent = title;
-                titleInput.replaceWith(titleElement);
+                const savedList = await saveListToBackend(title);
+                if (savedList) {
+                    console.log("List saved to backend:", savedList);
+                    // Uppdatera listan i UI med den nya listan
+                    const titleElement = document.createElement("h4");
+                    titleElement.textContent = savedList.title; // Använd titeln från backend-svaret
+                    titleInput.replaceWith(titleElement);
+                    newList.id = `list-${savedList.id}`; // Sätt ID för den nya listan baserat på backend-svaret
+                } else {
+                    console.error("Failed to save list to backend.");
+                }
             }
         }
     });
@@ -119,6 +126,6 @@ async function deleteListFromBackend(listId) {
     }
 }
 
-function updateListInBackend(listId, newTitle, isCompleted) {
+function updateListInBackend(listId, newTitle) {
     // Här kan du implementera logik för att uppdatera listan i backend
 }
