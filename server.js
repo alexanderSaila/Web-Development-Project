@@ -24,6 +24,30 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 
+// **********************
+// RATE LIMITERS
+// OBS!! 
+// Ändra max-värdena när appen är i produktion
+// **********************
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000, // Limit each IP to 5 login requests per windowMs
+    message: "Too many login attempts from this IP, please try again after 15 minutes"
+});
+
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 1000, // Limit each IP to 10 registration requests per windowMs
+    message: "Too many accounts created from this IP, please try again after an hour"
+});
+
+const otherLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5000, // Limit each IP to 5 requests per windowMs
+    message: "Too many requests from this IP, please try again after 15 minutes"
+});
+
+
 // ***********************
 // HELPERS
 // ***********************
@@ -185,28 +209,6 @@ app.put('/admin/users/:userId', async (req, res) => {
 
 // ***********************
 
-// **********************
-// RATE LIMITERS
-// OBS!! 
-// Ändra max-värdena när appen är i produktion
-// **********************
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // Limit each IP to 5 login requests per windowMs
-    message: "Too many login attempts from this IP, please try again after 15 minutes"
-});
-
-const registerLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 1000, // Limit each IP to 10 registration requests per windowMs
-    message: "Too many accounts created from this IP, please try again after an hour"
-});
-
-const otherLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5000, // Limit each IP to 5 requests per windowMs
-    message: "Too many requests from this IP, please try again after 15 minutes"
-});
 
 
 
