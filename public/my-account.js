@@ -199,16 +199,16 @@ async function requestDeleteAccount() {
         const response = await fetch("/api/delete-account", {
             method: "DELETE"
         });
-    } catch (error) {
-        console.error("Error deleting account:", error);
-    }
 
-    if (response.ok) {
+        if (response.ok) {
         alert("Account deleted successfully!");
         window.location.href = "/login";
-        logOut();
+        logout();
     } else {
         alert("Failed to delete account. Please try again.");
+    }
+    } catch (error) {
+        console.error("Error deleting account:", error);
     }
 }
 
