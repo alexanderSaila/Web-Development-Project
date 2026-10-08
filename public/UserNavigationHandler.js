@@ -30,7 +30,7 @@ class UserNavigationHandler {
 
         window.addEventListener("click", (event) => {
             if (event.target === shareWindow) {
-                this.shareWindow.style.display = "none";
+                shareWindow.style.display = "none";
             }
         });
 
@@ -117,4 +117,4 @@ class UserNavigationHandler {
     }
 }
 
-userNavigationHandler = new UserNavigationHandler();
+const userNavigationHandler = new UserNavigationHandler();
