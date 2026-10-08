@@ -14,6 +14,7 @@ const backdrop = document.getElementById("backdrop");
 backdrop.classList.add("hidden");
 const popUpWindowInputContainer = document.getElementById("popup-window-input-container");
 const popUpWindowHeader = document.getElementById("popup-window-header");
+const requestList = document.getElementById("request-list");
 
 var POPUP_WINDOW_VISIBLE = false;
 
@@ -130,9 +131,51 @@ shareRequestButton.addEventListener("click", async () => {
     showPopUpWindow("Share Requests", "Here are your share requests:", false);
     const shares = await loadShareRequests();
     shares.forEach((share) => {
-        console.log(share.fName, share.type) 
+        const listItem = document.createElement("li");
+        console.log(share.fName, share.lName, share.type) 
+
+        listItem.innerHTML = `
+            <p>${share.fName} ${share.lName} has sent you a share request for their ${share.type}.</p>
+            <button class="accept-button">Accept</button>
+            <button class="decline-button">Decline</button>
+        `;
+        requestList.appendChild(listItem);
+
+        const acceptButton = listItem.querySelector(".accept-button");
+        acceptButton.addEventListener("click", async () => {
+            await acceptShareRequest(share.sharerId, share.type);
+            listItem.remove();
+        });
+
+        const declineButton = listItem.querySelector(".decline-button");
+        declineButton.addEventListener("click", async () => {
+            await declineShareRequest(share.sharerId, share.type);
+            listItem.remove();
+        });
+        
     });
 });
+
+async function acceptShareRequest(sharerId, type) {
+    const endPoint = type === "list" ? "/api/lists/share/accept" : "/api/share/accept";
+    const response = await fetch(endPoint, {
+        method: "POST",
+        body: JSON.stringify({ sharerId }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    if (response.ok) {
+        alert("Share request accepted!");
+    } else {
+        alert("Failed to accept share request. Please try again.");
+    }
+}    
+
+async function declineShareRequest(sharerId, type) {
+    alert("Decline share request functionality is not implemented yet.");
+}
 
 // Back
 backButton.addEventListener("click", () => {
