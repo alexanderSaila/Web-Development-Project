@@ -31,7 +31,22 @@ function createListBox(list) {
     titleElement.classList.add("list-title");
     titleElement.textContent = list.title;
 
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", async () => {
+        const confirmed = confirm(`Are you sure you want to delete the list "${list.title}"?`);
+        if (confirmed) {
+            const success = await deleteListFromBackend(list.id);
+            if (success) {
+                listBox.remove();
+            } else {
+                alert("Failed to delete the list. Please try again.");
+            }
+        }
+    });
+
     listBox.appendChild(titleElement);
+    listBox.appendChild(deleteButton);
     return listBox;
 }
 
@@ -139,7 +154,6 @@ async function deleteListFromBackend(listId) {
         });
         if (response.ok) {
             console.log(`List with ID ${listId} deleted successfully.`);
-            document.getElementById(`list-${listId}`)?.remove();
             return true;
         } else {
             console.error(`Failed to delete list with ID ${listId}.`);
