@@ -51,6 +51,9 @@ class Calendar {
             this.selectedDate.setMonth(this.selectedDate.getMonth() + 1);
             this.displayMonth();
         });
+        this.myAccountButton.addEventListener("click", () => {
+            window.location.href = "my-account.html";
+        });
 
         this.setUpShare();
 
@@ -67,6 +70,12 @@ class Calendar {
 
         window.addEventListener("click", (event) => {
             if (event.target === shareWindow) {
+                shareWindow.style.display = "none";
+            }
+        });
+
+        window.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
                 shareWindow.style.display = "none";
             }
         });
@@ -231,7 +240,7 @@ class Calendar {
 
             if (response.ok) {
                 const savedTask = await response.json();
-                const finishedTask = this.createTaskElement(savedTask.title, savedTask.id, savedTask.is_owner);
+                const finishedTask = this.createTaskElement(savedTask.title, savedTask.id, true);
                 this.selectedDay.insertBefore(finishedTask, parentElement);
             }
         } catch (e) {

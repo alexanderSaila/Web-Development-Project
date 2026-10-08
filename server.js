@@ -227,7 +227,7 @@ const otherLimiter = rateLimit({
 // GET PENDING SHARE REQUESTS
 // ***********************
 
-app.get("/api/shares/pending", async (req, res) => {
+app.get("/api/share/pending", async (req, res) => {
     const loggedInUserId = req.cookies["user-id"];
 
     if (!loggedInUserId) {
@@ -463,7 +463,7 @@ app.get("/api/logged-in", otherLimiter, async(req,res) =>{
 // **********************
 // CHANGE PASSWORD
 // **********************
-app.post("/api/change-password", otherLimiter, async (req, res) => {
+app.put("/api/change-password", otherLimiter, async (req, res) => {
     const loggedInUserId = req.cookies["user-id"];
     const { currentPassword, newPassword } = req.body;
 
@@ -499,10 +499,39 @@ app.post("/api/change-password", otherLimiter, async (req, res) => {
             [hashedNewPassword, loggedInUserId]
         );
 
-        res.json({ message: "Password changed successfully" });
+        res.status(200).json({ message: "Password changed successfully" });
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: "Failed to change password" });
+    }
+});
+
+
+// **********************
+// CHANGE NAME
+// **********************
+app.put("/api/change-name", otherLimiter, async (req, res) => {
+    const loggedInUserId = req.cookies["user-id"];
+    const { firstName, lastName } = req.body;
+
+    if (!loggedInUserId) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+
+    if (!firstName || !lastName) {
+        return res.status(400).json({ error: "First name and last name are required" });
+    }
+
+    try {
+        await pool.query(
+            "UPDATE User SET fName = ?, lName = ? WHERE uID = ?",
+            [firstName.trim(), lastName.trim(), loggedInUserId]
+        );
+
+        res.status(200).json({ message: "Name changed successfully" });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to change name" });
     }
 });
 
