@@ -207,6 +207,8 @@ async function requestDeleteAccount() {
         alert("Account deleted successfully!");
         window.location.href = "/login";
         logOut();
+    } else {
+        alert("Failed to delete account. Please try again.");
     }
 }
 
