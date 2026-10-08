@@ -1,16 +1,3 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    const userName = capitalize(localStorage.getItem("firstName") || "User");
-    document.getElementById("greeting").textContent = `Hello, ${userName}!`;
-});
-
-function logout() {
-    fetch('/logout', {
-        method: 'POST'
-    }).then(() => {
-        window.location.href = '/login.html';
-    })
-};
 
 class Calendar {
 
@@ -29,76 +16,35 @@ class Calendar {
     weekContainer = null;
     previousMonthButton = null;
     nextMonthButton = null;
-    myAccountButton = null;
 
     constructor() {
-        this.checkLoggedIn();
 
         this.selectedDate = new Date();
         this.scheduleSection = document.getElementById("schedule-section");
         this.previousMonthButton = document.getElementById("previous-month-button");
         this.nextMonthButton = document.getElementById("next-month-button");
-        this.myAccountButton = document.getElementById("account-button");
 
         this.weekContainer = document.createElement("div");
         this.scheduleSection.append(this.weekContainer);
 
         this.previousMonthButton.addEventListener("click", () => {
             this.selectedDate.setMonth(this.selectedDate.getMonth() - 1);
-            this.displayMonth();
+            this.#displayMonth();
         });
         this.nextMonthButton.addEventListener("click", () => {
             this.selectedDate.setMonth(this.selectedDate.getMonth() + 1);
-            this.displayMonth();
-        });
-        this.myAccountButton.addEventListener("click", () => {
-            window.location.href = "my-account.html";
+            this.#displayMonth();
         });
 
-        this.setUpShare();
-
-        this.displayMonth();
+        this.#displayMonth();
+        this.#loadTasks();
     }
 
-    setUpShare() {
-        const shareWindow = document.getElementById("share-window");
-        const shareButton = document.getElementById("share-button");
-
-        shareButton.addEventListener("click", () => {
-            shareWindow.style.display = "flex";
-        });
-
-        window.addEventListener("click", (event) => {
-            if (event.target === shareWindow) {
-                shareWindow.style.display = "none";
-            }
-        });
-
-        window.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") {
-                shareWindow.style.display = "none";
-            }
-        });
-
-        document.getElementById("submit-share").addEventListener("click", () => {
-            const email = document.getElementById("share-email").value.trim();
-            const sendTasks = document.getElementById("share-tasks-checkbox");
-            const sendLists = document.getElementById("share-lists-checkbox");
-
-            if (email) {
-                this.shareElements(email, sendTasks, sendLists);
-
-                shareWindow.style.display = "none";
-                document.getElementById("share-email").value = "";
-            }
-        });
-    }
-
-    displayMonth() {
+    #displayMonth() {
         const month = this.selectedDate.getMonth() + 1;
         const year = this.selectedDate.getFullYear();
 
-        this.displayCalendarName(month - 1);
+        this.#displayCalendarName(month - 1);
         this.weekContainer.replaceChildren();
 
         const startDate = new Date(year, month - 1, 1);
@@ -122,11 +68,11 @@ class Calendar {
                 const previousMonth = new Date(year, month - 1, -1); // last day of previous month
                 const offset = previousMonth.getDate() - (startDay - i) + 2;
 
-                tempDay = this.createDayNode(dayName, offset, month - 1, true);
+                tempDay = this.#createDayNode(dayName, offset, month - 1, true);
             } else {
                 const dayNumber = i - startDay + 1;
 
-                tempDay = this.createDayNode(dayName, dayNumber, month, false);
+                tempDay = this.#createDayNode(dayName, dayNumber, month, false);
             }
 
             currentWeekDiv.append(tempDay);
@@ -146,21 +92,19 @@ class Calendar {
             for (let i = 0; i < missingDays; i++) {
 
                 const dayName = Calendar.weekNames[7 - missingDays + i];
-                const tempDay = this.createDayNode(dayName, i + 1, month + 1, true);
+                const tempDay = this.#createDayNode(dayName, i + 1, month + 1, true);
                 currentWeekDiv.append(tempDay);
             }
             this.weekContainer.append(currentWeekDiv);
         }
-
-        this.loadTasks();
     }
 
-    displayCalendarName(month) {
+    #displayCalendarName(month) {
         const calendarHeader = document.getElementById("month-name");
         calendarHeader.textContent = Calendar.monthNames[month] + " " + this.selectedDate.getFullYear();;
     }
 
-    createDayNode(dayName, dayNumber, month, isEmpty) {
+    #createDayNode(dayName, dayNumber, month, isEmpty) {
         const daySection = document.createElement("section");
         daySection.setAttribute("id", `${this.selectedDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`);
 
@@ -174,7 +118,7 @@ class Calendar {
             dayHeader.classList.add("day-header");
 
             daySection.addEventListener("click", () => {
-                this.changeFocusedDay(daySection);
+                this.#changeFocusedDay(daySection);
             });
         }
         else {
@@ -185,20 +129,7 @@ class Calendar {
         return daySection;
     }
 
-    async checkLoggedIn() {
-        try {
-            const response = await fetch("api/logged-in", {
-                method: "GET"
-            });
-            if (response.status === 401) {
-                window.location.href = "/login.html"
-            }
-        } catch (e) {
-            console.error("Not logged in", e);
-        }
-    }
-
-    async loadTasks() {
+    async #loadTasks() {
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
 
@@ -215,7 +146,7 @@ class Calendar {
 
                 const daySection = document.getElementById(task.task_date);
                 if (daySection) {
-                    const tempTask = this.createTaskElement(task.title, task.id, task.is_owner, task.name);
+                    const tempTask = this.#createTaskElement(task.title, task.id, task.is_owner, task.name);
 
                     daySection.append(tempTask);
                 }
@@ -227,7 +158,7 @@ class Calendar {
 
     }
 
-    async saveTask(title, parentElement) {
+    async #saveTask(title, parentElement) {
         const taskDate = this.selectedDay.id;
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
@@ -243,7 +174,7 @@ class Calendar {
 
             if (response.ok) {
                 const savedTask = await response.json();
-                const finishedTask = this.createTaskElement(savedTask.title, savedTask.id, true);
+                const finishedTask = this.#createTaskElement(savedTask.title, savedTask.id, true);
                 this.selectedDay.insertBefore(finishedTask, parentElement);
             }
         } catch (e) {
@@ -251,7 +182,7 @@ class Calendar {
         }
     }
 
-    async deleteTask(id, element) {
+    async #deleteTask(id, element) {
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
 
@@ -270,48 +201,7 @@ class Calendar {
         }
     }
 
-    async shareElements(email, willShareTasks, willShareLists) {
-
-        if (willShareTasks.checked) {
-            try {
-                const response = await fetch("/api/tasks/share", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ email })
-                });
-
-                if (response.ok) {
-                    const data = await response.json()
-                    console.log(data.message);
-                }
-            } catch (e) {
-                console.error("Failed to share:", e);
-            }
-        }
-
-        if (willShareLists.checked) {
-            try {
-                const response = await fetch("/api/lists/share", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ email })
-                });
-
-                if (response.ok) {
-                    const data = await response.json()
-                    console.log(data.message);
-                }
-            } catch (e) {
-                console.error("Failed to share:", e);
-            }
-        }
-    }
-
-    changeFocusedDay(dayElement) {
+    #changeFocusedDay(dayElement) {
         if (this.selectedDay === dayElement) { return; }
 
         this.#clearFocusedDay();
@@ -342,7 +232,7 @@ class Calendar {
 
             addButton.classList.toggle("hidden");
 
-            const inputField = this.createInputField(addButton);
+            const inputField = this.#createInputField(addButton);
             if (inputField !== null) {
                 this.selectedDay.insertBefore(inputField, addButton);
                 inputField.focus();
@@ -352,7 +242,7 @@ class Calendar {
         return addButton;
     }
 
-    createInputField(button) {
+    #createInputField(button) {
         if (this.selectedDay.querySelector(".input-field") == null) {
             const inputField = document.createElement("input");
             inputField.className = "input-field";
@@ -368,7 +258,7 @@ class Calendar {
                 if (e.key === "Enter") {
                     const title = inputField.value.trim();
                     if (title) {
-                        await this.saveTask(title, inputField);
+                        await this.#saveTask(title, inputField);
                     }
 
                     removeFieldRevealButton();
@@ -383,7 +273,7 @@ class Calendar {
         return null;
     }
 
-    createTaskElement(inputText, id = null, is_owner, ownerName = null) {
+    #createTaskElement(inputText, id = null, is_owner, ownerName = null) {
         const finishedTask = document.createElement("li");
         finishedTask.classList.add("day-task");
         finishedTask.textContent = inputText;
@@ -399,7 +289,7 @@ class Calendar {
                 e.stopPropagation();
 
                 const editTaskWindow = document.getElementById("edit-task-window");
-                const optionWindow = this.createOptionWindow(finishedTask);
+                const optionWindow = this.#createOptionWindow(finishedTask);
 
                 editTaskWindow.append(optionWindow);
 
@@ -409,7 +299,7 @@ class Calendar {
         return finishedTask;
     }
 
-    createOptionWindow(task) {
+    #createOptionWindow(task) {
         const window = document.createElement("div");
         window.classList.add("task-option-window");
 
@@ -433,7 +323,7 @@ class Calendar {
         editButton.addEventListener("click", (e) => {
             e.stopPropagation();
 
-            const editField = this.createEditTaskField(task, window);
+            const editField = this.#createEditTaskField(task, window);
             content.insertBefore(editField, editButton);
 
             console.log("ADDED EDIT FIELD");
@@ -448,7 +338,7 @@ class Calendar {
                 task.remove();
                 return;
             }
-            await this.deleteTask(taskId, task);
+            await this.#deleteTask(taskId, task);
             window.remove();
         });
 
@@ -470,7 +360,7 @@ class Calendar {
         return window;
     }
 
-    createEditTaskField(task, optionWindow) {
+    #createEditTaskField(task, optionWindow) {
         const editField = document.createElement("input");
         editField.classList.add("input-field");
         editField.value = task.textContent;
