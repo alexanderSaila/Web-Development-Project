@@ -176,7 +176,7 @@ async function acceptShareRequest(sharerId, type) {
 }    
 
 async function declineShareRequest(sharerId, type) {
-    popUpWindowErrorMessage.textContent = "Decline share request functionality is not implemented yet.";
+    popupWindowErrorMessage.textContent = "Decline share request functionality is not implemented yet.";
 }
 
 // Back
@@ -212,9 +212,9 @@ async function requestChangePassword() {
 
     if (response.ok) {
         hidePopUpWindow();
-        popUpWindowErrorMessage.textContent = "";
+        popupWindowErrorMessage.textContent = "";
     } else {
-        popUpWindowErrorMessage.textContent = "Failed to change password. Please try again.";
+        popupWindowErrorMessage.textContent = "Failed to change password. Please try again.";
     }
 }
 
