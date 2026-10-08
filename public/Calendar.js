@@ -164,7 +164,7 @@ class Calendar {
         const month = this.selectedDate.getMonth() + 1;
 
         try {
-            const response = await fetch(`api/tasks/${year}/${month}`, {
+            const response = await fetch(`/api/tasks/${year}/${month}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -386,6 +386,8 @@ class Calendar {
                 } catch (err) {
                     console.error("Failed to edit task:", err);
                 }
+            } else if (e.key === "Escape") {
+                if (optionWindow) optionWindow.remove();
             }
         });
 
