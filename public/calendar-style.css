@@ -230,6 +230,7 @@
     border: solid 2px darkred;
     color: white;
     cursor: pointer;
+    border-radius: 5px;
 }
 
 .list-title-container {
