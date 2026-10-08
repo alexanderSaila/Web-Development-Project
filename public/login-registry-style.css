@@ -2,6 +2,7 @@ body {
     display: grid;
     place-items: center;
     min-height: 100vh;
+    margin: 0;
     background: linear-gradient(135deg, hsl(211, 100%, 50%), hsl(211, 100%, 80%));
 }
 
