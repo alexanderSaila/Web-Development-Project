@@ -22,16 +22,16 @@ else {
     console.log("NO BUTTON FOUND");
 }
 
-function createListElement(list) {
-    const listElement = document.createElement("div");
-    listElement.classList.add("list-box");
-    listElement.id = `list-${list.id}`;
+function createListBox(list) {
+    const listBox = document.createElement("div");
+    listBox.classList.add("list-box");
+    listBox.id = `list-${list.id}`;
 
     const titleElement = document.createElement("h4");
     titleElement.textContent = list.title;
 
-    listElement.appendChild(titleElement);
-    return listElement;
+    listBox.appendChild(titleElement);
+    return listBox;
 }
 
 async function loadLists() {
@@ -39,8 +39,8 @@ async function loadLists() {
     const container = emptyList.parentElement;
 
     lists.forEach(list => {
-        const listElement = createListElement(list);
-        container.insertBefore(listElement, emptyList);
+        const listBox = createListBox(list);
+        container.insertBefore(listBox, emptyList);
     });
 }
 
