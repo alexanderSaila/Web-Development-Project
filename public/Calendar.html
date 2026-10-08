@@ -26,7 +26,14 @@
 
             <div id="share-window" class="share-window">
                 <div class="share-content">
-                    <h3>Share Schedule</h3>
+                    <h3>Share</h3>
+                    <fieldset>
+                        <legend>Share Type:</legend>
+                        <input type="checkbox" id="share-tasks" name="share-type" value="task" checked>
+                        <label for="share-tasks">Tasks</label>
+                        <input type="checkbox" id="share-lists" name="share-type" value="list">
+                        <label for="share-lists">Lists</label>
+                    </fieldset>
                     <input type="email" id="share-email" placeholder="Enter email address" required>
                     <button id="submit-share">Send</button>
                 </div>
@@ -39,7 +46,7 @@
     </section>
 
 
-    
+
     <section id="list-section" class="section">
         <h3 class="section-title">Lists</h3>
         <div class="list-container">
