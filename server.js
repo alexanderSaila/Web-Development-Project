@@ -15,7 +15,8 @@ const pool = mariadb.createPool({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    connectionLimit: process.env.DB_CONNECTION_LIMIT
+    connectionLimit: process.env.DB_CONNECTION_LIMIT,
+    port: process.env.DB_PORT
 });
 
 
@@ -1073,4 +1074,11 @@ app.put("/api/lists/:listId/elements/:elementId", async (req, res) => {
 // ***********************
 // START THE SERVER
 // ***********************
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+app.listen(PORT, (err) => {
+    if (err) {
+        console.error(`Error starting server: ${err}`);
+        return;
+    }
+    console.log(`Server running at http://localhost:${PORT}`);
+
+});
