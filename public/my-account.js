@@ -19,6 +19,14 @@ var POPUP_WINDOW_VISIBLE = false;
 
 document.addEventListener("keydown", handleKeyDown);
 
+function logout() {
+    fetch('/logout', {
+        method: 'POST'
+    }).then(() => {
+        window.location.href = '/login.html';
+    })
+};
+
 function hidePopUpWindow() {
     backdrop.classList.add("hidden");
     popUpWindow.classList.add("hidden");
@@ -193,6 +201,12 @@ async function requestDeleteAccount() {
         });
     } catch (error) {
         console.error("Error deleting account:", error);
+    }
+
+    if (response.ok) {
+        alert("Account deleted successfully!");
+        window.location.href = "/login";
+        logOut();
     }
 }
 
