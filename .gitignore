@@ -1,5 +1,5 @@
 /node_modules
-.env
-Alexander bugs.txt
+#.env
+#Alexander bugs.txt
 MariaDB setup.txt
-todo.md
+#todo.md
