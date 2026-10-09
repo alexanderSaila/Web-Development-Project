@@ -45,7 +45,6 @@ class Calendar {
         });
 
         this.#displayMonth();
-        this.#loadTasks();
     }
 
     #displayMonth() {
@@ -110,6 +109,7 @@ class Calendar {
     #displayCalendarName(month) {
         const calendarHeader = document.getElementById("month-name");
         calendarHeader.textContent = Calendar.monthNames[month] + " " + this.selectedDate.getFullYear();;
+        this.#loadTasks();
     }
 
     #createDayNode(dayName, dayNumber, month, isEmpty) {
