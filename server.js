@@ -550,10 +550,12 @@ app.delete("/api/delete-account", otherLimiter, async (req, res) => {
             "DELETE FROM User WHERE uID = ?",
             [loggedInUserId]
         );
+        return res.status(200).json({ message: "Account deleted successfully" });
     } catch (e) {
         console.error(e);
         return res.status(500).json({ error: "Failed to delete account" });
     }
+
 });
 
 
