@@ -56,7 +56,7 @@ class UserNavigationHandler {
 
     async shareElements(email, willShareTasks, willShareLists) {
 
-        if (willShareTasks.checked) {
+        if (willShareTasks) {
             try {
                 const response = await fetch("/api/tasks/share", {
                     method: "POST",
@@ -75,7 +75,7 @@ class UserNavigationHandler {
             }
         }
 
-        if (willShareLists.checked) {
+        if (willShareLists) {
             try {
                 const response = await fetch("/api/lists/share", {
                     method: "POST",
