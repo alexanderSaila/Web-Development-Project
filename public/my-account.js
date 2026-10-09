@@ -91,8 +91,7 @@ function handleChangeNamePopUp() {
 
     const cancelButton = standardCancelButton();
 
-    const submitButton = document.createElement("button");
-    submitButton.textContent = "Submit";
+    const submitButton = standardSubmitButton();
 
     submitButton.addEventListener("click", async () => {
         const firstName = enterFirstName.value.trim();
@@ -119,8 +118,7 @@ function handleChangePasswordPopUp() {
 
     const cancelButton = standardCancelButton();
 
-    const submitButton = document.createElement("button");
-    submitButton.textContent = "Submit";
+    const submitButton = standardSubmitButton();
 
     submitButton.addEventListener("click", async () => {
         const newPassword = enterNewPassword.value.trim();
@@ -140,12 +138,13 @@ function handleChangePasswordPopUp() {
 function handleDeleteAccountPopUp() {
     const cancelButton = standardCancelButton();
 
-    const submitButton = document.createElement("button");
+    const submitButton = standardSubmitButton();
     submitButton.textContent = "Delete Account";
     submitButton.classList.add("delete");
 
     submitButton.addEventListener("click", async () => {
         await requestDeleteAccount();
+        logout();
     });
 
     clearInputContainers();
@@ -248,6 +247,13 @@ function standardCancelButton() {
     });
 
     return cancelButton;
+}
+
+function standardSubmitButton() {
+    const submitButton = document.createElement("button");
+    submitButton.textContent = "Submit";
+
+    return submitButton;
 }
 
 function clearInputContainers() {
