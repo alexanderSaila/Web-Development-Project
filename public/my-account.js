@@ -253,7 +253,7 @@ function standardCancelButton() {
 function standardSubmitButton() {
     const submitButton = document.createElement("button");
     submitButton.textContent = "Submit";
-    submitButton.classList.add("popup-window-submit-button");
+    submitButton.classList.add("interract-button");
 
     return submitButton;
 }
