@@ -1,7 +1,7 @@
 ## Buggar
 - [SOLVED] Kalendern laddar inte om tasks vid månadsbyte (`#loadTasks` anropas bara i konstruktorn)
 - [SOLVED] `/api/delete-account` skickar aldrig något svar när det lyckas
-- [ ] Redigera task: tom titel skickas till servern (400)
+- [SOLVED] Redigera task: tom titel skickas till servern (400)
 - [SOLVED TROR JAG] Felmeddelanden läser `.message` i stället för `.error` på fler sidor? (kolla register, my-account)
 
 ## Funktioner som saknas

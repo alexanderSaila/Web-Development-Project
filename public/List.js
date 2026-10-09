@@ -71,7 +71,7 @@ function createNewList(callerElement) {
     const existing = parent.querySelector(".new-list");
 
     if (existing) {
-        console.log("New list already exists. Not creating another one.");
+        console.error("New list already exists. Not creating another one.");
         existing.querySelector("input").focus();
         return;
     }
@@ -107,6 +107,7 @@ function createNewList(callerElement) {
     newList.append(titleInput);
     console.log("newList efter append:", newList);
     parent.insertBefore(newList, callerElement);
+    titleInput.focus();
 
 }
 

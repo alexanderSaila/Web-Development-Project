@@ -377,6 +377,10 @@ class Calendar {
             if (e.key === "Enter") {
                 //const userId = sessionStorage.getItem("loggedInUserId");
                 const editedText = editField.value.trim();
+                if (!editedText) {
+                    console.error("Task title cannot be empty.");
+                    return;
+                }
                 try {
                     const response = await fetch(`/api/tasks/${task.dataset.id}`, {
                         method: "PUT",
