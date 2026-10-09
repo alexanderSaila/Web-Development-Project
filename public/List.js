@@ -68,8 +68,17 @@ loadLists();
 
 function createNewList(callerElement) {
     const parent = callerElement.parentElement;
+    const existing = parent.querySelector(".new-list");
+
+    if (existing) {
+        console.log("New list already exists. Not creating another one.");
+        existing.querySelector("input").focus();
+        return;
+    }
+
     const newList = document.createElement("div");
     newList.classList.add("list-box");
+    newList.classList.add("new-list");
 
     const titleInput = document.createElement("input");
     titleInput.type = "text";
@@ -85,12 +94,12 @@ function createNewList(callerElement) {
                 const savedList = await saveListToBackend(title);
                 if (savedList) {
                     newList.replaceWith(createListBox(savedList));
-                } else if (e.key === "Escape") {
-                    newList.remove();
                 } else {
                     console.error("Failed to save the new list. Please try again.");
                 }
             }
+        } else if (e.key === "Escape") {
+            newList.remove();
         }
     });
 

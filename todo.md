@@ -14,7 +14,7 @@
 ## UX
 - [ ] Byt ut `confirm`/`alert` mot egna modaler
 - [SOLVED] Escape i titelfältet för ny lista ska avbryta
-- [ ] Hindra flera "ny lista"-fält samtidigt
+- [SOLVED] Hindra flera "ny lista"-fält samtidigt
 - [ ] Delningsfönstret stängs innan man vet om det lyckades
 - [SOLVED] `flex-wrap: wrap` på `.list-container`, annars åker listor ut ur skärmen
 - [ ] Snygga till hur man lägger in titel i list
