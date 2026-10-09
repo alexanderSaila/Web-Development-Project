@@ -123,7 +123,7 @@ app.get('/admin/users', async (req, res) => {
         if (adminCheck.length === 0 || !adminCheck[0].is_admin) {
             return res.status(403).json({ error: "Forbidden. Admin access required." });
         }
-        
+
         const users = await pool.query(
             "SELECT uID, fName, lName, email, is_admin FROM User"
         );
@@ -336,7 +336,7 @@ app.post("/api/tasks/share/accept", async (req, res) => {
 // **********************
 app.get('/api/tasks/:year/:month', async (req, res) => {
     const loggedInUserId = req.signedCookies["user-id"];
-    
+
     if (!loggedInUserId) {
         console.log("Unauthorized. Please log in.");
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -392,10 +392,14 @@ app.post("/api/register", registerLimiter, async (req, res) => {
             [firstName, lastName, email, hashedPassword]
         );
 
-        res.status(201).json({ message: "Successfully registered user"});
+        return res.status(201).json({ message: "Successfully registered user" });
 
     } catch (e) {
         console.error(e);
+        if (e.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ error: "Email already exists" });
+        }
+
         res.status(500).json({ error: "Failed to create new user in database" });
     }
 });
@@ -419,7 +423,7 @@ app.post("/api/login", loginLimiter, async (req, res) => {
         if (result.length === 0) {
             return res.status(404).json({ error: "No user found" });
         }
-        
+
         const resultUser = result[0];
 
         const validPassword = await bcrypt.compare(password, resultUser.password_hash);
@@ -439,7 +443,7 @@ app.post("/api/login", loginLimiter, async (req, res) => {
             sameSite: "strict",
             maxAge: 3600000,
             signed: true,
-            secure: false 
+            secure: false
         });
 
         res.status(200).json(user);
@@ -452,13 +456,13 @@ app.post("/api/login", loginLimiter, async (req, res) => {
 // **********************
 // CHECK USER IS LOGGED IN
 // **********************
-app.get("/api/logged-in", otherLimiter, async(req,res) =>{
+app.get("/api/logged-in", otherLimiter, async (req, res) => {
     const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
     }
-    else{
+    else {
         return res.status(200).json({ message: "User is logged in" });
     }
 });
@@ -623,7 +627,7 @@ app.post("/api/tasks/share", otherLimiter, async (req, res) => {
 // **********************
 app.post("/api/tasks/:year/:month", async (req, res) => {
     const loggedInUserId = req.signedCookies["user-id"];
-    
+
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
     }
@@ -659,11 +663,11 @@ app.post("/api/tasks/:year/:month", async (req, res) => {
 // **********************
 app.delete("/api/tasks/:year/:month/:id", async (req, res) => {
     const loggedInUserId = req.signedCookies["user-id"];
-    
+
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
     }
-    
+
     const { id } = req.params;
 
     try {
@@ -1008,7 +1012,7 @@ app.delete("/api/lists/:listId/elements/:elementId", async (req, res) => {
             "DELETE FROM ListElement WHERE leID = ? AND lID = ?",
             [elementId, listId]
         );
-        
+
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Element not found or not authorized to user" });
         }

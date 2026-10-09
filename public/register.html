@@ -61,7 +61,7 @@
                     window.location.href = "/login.html";
                 } else {
                     const errorData = await response.json();
-                    document.getElementById("error-message").textContent = errorData.message || "Registration failed. Please try again.";
+                    document.getElementById("error-message").textContent = errorData.error || "Registration failed. Please try again.";
                 }
             } catch (error) {
                 console.error("error logging in:", error);
