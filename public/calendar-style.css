@@ -85,6 +85,7 @@
 
 .day-task {
     margin: 5px;
+    list-style-position: inside;
 }
 
 .day-task::marker {
