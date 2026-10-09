@@ -1,2 +1,2 @@
-- Ta bort account logger inte ut dig. Cookies?
+- Ta bort account logger inte ut dig. Cookies? (Ska va löst tror jag //Albin)
 - (LÖST) Om man hoppar mellan menyer i my account och sen byter lösen så skrivs ditt gamla och nya lösenord som namn och efternamn
