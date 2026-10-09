@@ -2,18 +2,18 @@
 - [SOLVED] Kalendern laddar inte om tasks vid månadsbyte (`#loadTasks` anropas bara i konstruktorn)
 - [SOLVED] `/api/delete-account` skickar aldrig något svar när det lyckas
 - [ ] Redigera task: tom titel skickas till servern (400)
-- [ ] Felmeddelanden läser `.message` i stället för `.error` på fler sidor? (kolla register, my-account)
+- [SOLVED TROR JAG] Felmeddelanden läser `.message` i stället för `.error` på fler sidor? (kolla register, my-account)
 
 ## Funktioner som saknas
 - [ ] Byta namn på listor (`updateListInBackend` är tom)
 - [ ] Saker i listorna: visa, lägga till, bocka av, ta bort (servern har redan routes)
-- [ ] Neka delningsförfrågningar (decline)
+- [ ] Neka delningsförfrågningar (decline) (declineShareRequest är inte byggd i my-account.js)
 - [ ] Sluta dela med någon som redan accepterat
 - [ ] Dölj delete-knappen på listor som andra delat med dig (servern behöver skicka `is_owner` för listor)
 
 ## UX
 - [ ] Byt ut `confirm`/`alert` mot egna modaler
-- [ ] Escape i titelfältet för ny lista ska avbryta
+- [SOLVED] Escape i titelfältet för ny lista ska avbryta
 - [ ] Hindra flera "ny lista"-fält samtidigt
 - [ ] Delningsfönstret stängs innan man vet om det lyckades
 - [SOLVED] `flex-wrap: wrap` på `.list-container`, annars åker listor ut ur skärmen

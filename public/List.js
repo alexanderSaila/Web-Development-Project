@@ -85,12 +85,16 @@ function createNewList(callerElement) {
                 const savedList = await saveListToBackend(title);
                 if (savedList) {
                     newList.replaceWith(createListBox(savedList));
+                } else if (e.key === "Escape") {
+                    newList.remove();
                 } else {
-                    console.error("Failed to save list to backend.");
+                    console.error("Failed to save the new list. Please try again.");
                 }
             }
         }
     });
+
+
     newList.append(titleInput);
     console.log("newList efter append:", newList);
     parent.insertBefore(newList, callerElement);
