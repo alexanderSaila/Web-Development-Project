@@ -65,14 +65,8 @@ async function canAccessList(listId, userId) {
     return rows.length > 0;
 }
 
-
 // ***********************
-// ADMIN PAGE
-// ***********************
-
-
-// ***********************
-// ADMIN PAGE - LOGOUT
+// DELETE COOKIE ON LOGOUT
 // ***********************
 app.post('/logout', (req, res) => {
     res.clearCookie("user-id", {
@@ -82,6 +76,11 @@ app.post('/logout', (req, res) => {
     });
     res.status(200).json({ message: "Logged out successfully" });
 });
+
+
+// ***********************
+// ADMIN PAGE
+// ***********************
 
 // ***********************
 // CHECK IF USER IS ADMIN
