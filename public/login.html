@@ -20,7 +20,6 @@
                 <button type="button" class="register-button" onclick="window.location.href='/register.html'">Register</button>
             </form>
         </section>
-        <p id="error-message" style="color:red;" role="alert"></p>
     </div>
 
     <footer>
@@ -56,7 +55,12 @@
                     } 
                 } else { 
                     const errorData = await response.json();
-                    document.getElementById("error-message").textContent = errorData.error || "Login failed. Please try again.";
+                    const errorElement = document.createElement("p");
+                    errorElement.textContent = errorData.error || "Login failed. Please try again.";
+                    errorElement.style.color = "red";
+                    errorElement.setAttribute("role", "alert");
+
+                    document.getElementById("center-box").appendChild(errorElement);
                 }
             } catch (error) {
                 console.error("error logging in:", error);
