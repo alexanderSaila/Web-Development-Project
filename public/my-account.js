@@ -13,7 +13,7 @@ popUpWindow.classList.add("hidden");
 const backdrop = document.getElementById("backdrop");
 backdrop.classList.add("hidden");
 const popUpWindowInputContainer = document.getElementById("popup-window-input-container");
-const popUpWindowHeader = document.getElementById("popup-window-header");
+const popUpWindowButtonContainer = document.getElementById("popup-window-button-container");
 const popupWindowErrorMessage = document.getElementById("popup-window-error-message");
 
 const requestList = document.getElementById("request-list");
@@ -38,7 +38,7 @@ function hidePopUpWindow() {
 function unHidePopUpWindow() {
     backdrop.classList.remove("hidden");
     popUpWindow.classList.remove("hidden");
-        POPUP_WINDOW_VISIBLE = true;
+    POPUP_WINDOW_VISIBLE = true;
 }
 
 function handleKeyDown(event) {
@@ -50,91 +50,117 @@ function handleKeyDown(event) {
     }
 }
 
-function showInputsFields() {
-    const inputs = popUpWindowInputContainer.querySelectorAll("input");
-    inputs.forEach((input) => {
-        input.value = "";
-        input.classList.remove("hidden")
-    });
-}
-
-function hideInputsFields() {
-    const inputs = popUpWindowInputContainer.querySelectorAll("input");
-    inputs.forEach(input => input.classList.add("hidden"));
-}
-
-function showPopUpWindow(title, description, showInput = false, inputType = "text") {
+function showPopUpWindow(title, description, action) {
     unHidePopUpWindow();
+
+    const popUpWindowHeader = document.getElementById("popup-window-header");
     popUpWindowHeader.textContent = title;
 
-    if (showInput) {
-        showInputsFields();
-        handleIfInput(inputType);
-    } else {
-        hideInputsFields();
-    }
-}
+    const popUpWindowDescription = document.getElementById("popup-window-description");
+    popUpWindowDescription.textContent = description;
 
-
-function handleIfInput(inputType) {
-    if (inputType === "password") {
-        popUpWindowInputContainer.querySelector("#popup-window-input-1").setAttribute("type", "password");
-        popUpWindowInputContainer.querySelector("#popup-window-input-1").setAttribute("placeholder", "New Password");
-
-        popUpWindowInputContainer.querySelector("#popup-window-input-2").setAttribute("type", "password");
-        popUpWindowInputContainer.querySelector("#popup-window-input-2").setAttribute("placeholder", "Current Password");
-    } else {
-        popUpWindowInputContainer.querySelector("#popup-window-input-1").setAttribute("type", "text");
-        popUpWindowInputContainer.querySelector("#popup-window-input-1").setAttribute("placeholder", "First Name");
-
-        popUpWindowInputContainer.querySelector("#popup-window-input-2").setAttribute("type", "text");
-        popUpWindowInputContainer.querySelector("#popup-window-input-2").setAttribute("placeholder", "Last Name");
+    switch (action) {
+        case "change-name":
+            handleChangeNamePopUp();
+            break;
+        case "change-password":
+            handleChangePasswordPopUp();
+            break;
+        case "delete-account":
+            handleDeleteAccountPopUp();
+            break;
+        case "share-requests":
+            handleShareRequestsPopUp();
+            break;
+        default:
+            break;
     }
 }
 
 // ******************
-// BUTTON EVENT LISTENERS
-// ******************'
+// POP UP WINDOWS
+// ******************
 
-// Cancel
-cancelButton.addEventListener("click", () => {
-    hidePopUpWindow();
-    hideInputsFields();
-});
+function handleChangeNamePopUp() {
+    const enterFirstName = document.createElement("input");
+    enterFirstName.setAttribute("type", "text");
+    enterFirstName.setAttribute("placeholder", "First Name");
+    const enterLastName = document.createElement("input");
+    enterLastName.setAttribute("type", "text");
+    enterLastName.setAttribute("placeholder", "Last Name");
 
-// Change name
-changeNameButton.addEventListener("click", () => {
-    showPopUpWindow("Change Name", "Enter your new name below:", true);
-    submitButton.addEventListener("click", () => {
-        requestChangeName();
-    }, { once: true });
-});
+    const cancelButton = standardCancelButton();
 
-// Delete account
-deleteButton.addEventListener("click", () => {
-    showPopUpWindow("Delete Account", "Are you sure you want to delete your account? This action cannot be undone.", false);
-    submitButton.addEventListener("click", () => {
-        requestDeleteAccount();
-    }, { once: true });
-});
+    const submitButton = document.createElement("button");
+    submitButton.textContent = "Submit";
 
-// Change password
-changePasswordButton.addEventListener("click", () => {
-    showPopUpWindow("Change Password", "Enter your new password below:", true, "password");
     submitButton.addEventListener("click", async () => {
-        submitButton.textContent = "Submitting...";
-        await requestChangePassword();
-        submitButton.textContent = "Submit";
-    }, { once: true });
-});
+        const firstName = enterFirstName.value.trim();
+        const lastName = enterLastName.value.trim();
+        await requestChangeName(firstName, lastName);
+    });
 
-// Share requests
-shareRequestButton.addEventListener("click", async () => {
-    showPopUpWindow("Share Requests", "Here are your share requests:", false);
+    clearInputContainers();
+
+    popUpWindowInputContainer.appendChild(enterFirstName);
+    popUpWindowInputContainer.appendChild(enterLastName);
+
+    popUpWindowButtonContainer.appendChild(submitButton);
+    popUpWindowButtonContainer.appendChild(cancelButton);
+}
+
+function handleChangePasswordPopUp() {
+    const enterNewPassword = document.createElement("input");
+    enterNewPassword.setAttribute("type", "password");
+    enterNewPassword.setAttribute("placeholder", "New Password");
+    const enterCurrentPassword = document.createElement("input");
+    enterCurrentPassword.setAttribute("type", "password");
+    enterCurrentPassword.setAttribute("placeholder", "Current Password");
+
+    const cancelButton = standardCancelButton();
+
+    const submitButton = document.createElement("button");
+    submitButton.textContent = "Submit";
+
+    submitButton.addEventListener("click", async () => {
+        const newPassword = enterNewPassword.value.trim();
+        const currentPassword = enterCurrentPassword.value.trim();
+        await requestChangePassword(newPassword, currentPassword);
+    });
+
+    clearInputContainers();
+
+    popUpWindowInputContainer.appendChild(enterNewPassword);
+    popUpWindowInputContainer.appendChild(enterCurrentPassword);
+
+    popUpWindowButtonContainer.appendChild(submitButton);
+    popUpWindowButtonContainer.appendChild(cancelButton);
+}
+
+function handleDeleteAccountPopUp() {
+    const cancelButton = standardCancelButton();
+
+    const submitButton = document.createElement("button");
+    submitButton.textContent = "Delete Account";
+    submitButton.classList.add("delete");
+
+    submitButton.addEventListener("click", async () => {
+        await requestDeleteAccount();
+    });
+
+    clearInputContainers();
+
+    popUpWindowButtonContainer.appendChild(submitButton);
+    popUpWindowButtonContainer.appendChild(cancelButton);
+}
+
+async function handleShareRequestsPopUp() {
+    clearInputContainers();
+
     const shares = await loadShareRequests();
     shares.forEach((share) => {
         const listItem = document.createElement("li");
-        console.log(share.fName, share.lName, share.type) 
+        console.log(share.fName, share.lName, share.type)
 
         listItem.innerHTML = `
             <p>${share.fName} ${share.lName} has sent you a share request for their ${share.type}.</p>
@@ -154,8 +180,33 @@ shareRequestButton.addEventListener("click", async () => {
             await declineShareRequest(share.sharerId, share.type);
             listItem.remove();
         });
-        
+
     });
+}
+
+// ******************
+// BUTTON EVENT LISTENERS
+// ******************
+
+// Change name
+changeNameButton.addEventListener("click", () => {
+    showPopUpWindow("Change Name", "Enter your new name below:", "change-name");
+});
+
+// Change password
+changePasswordButton.addEventListener("click", () => {
+    showPopUpWindow("Change Password", "Enter your new password below:", "change-password");
+});
+
+// Delete account
+deleteButton.addEventListener("click", () => {
+    showPopUpWindow("Delete Account", "Are you sure you want to delete your account? This action cannot be undone.", "delete-account");
+});
+
+// Share requests
+shareRequestButton.addEventListener("click", async () => {
+    showPopUpWindow("Share Requests", "Here are your share requests:", "share-requests");
+
 });
 
 async function acceptShareRequest(sharerId, type) {
@@ -173,7 +224,7 @@ async function acceptShareRequest(sharerId, type) {
     } else {
         popupWindowErrorMessage.textContent = "Failed to accept share request. Please try again.";
     }
-}    
+}
 
 async function declineShareRequest(sharerId, type) {
     popupWindowErrorMessage.textContent = "Decline share request functionality is not implemented yet.";
@@ -184,23 +235,36 @@ backButton.addEventListener("click", () => {
     window.location.href = "Calendar.html";
 });
 
+// ******************
+// HELPER FUNCTIONS
+// ******************
 
+function standardCancelButton() {
+    const cancelButton = document.createElement("button");
+    cancelButton.textContent = "Cancel";
 
+    cancelButton.addEventListener("click", () => {
+        hidePopUpWindow();
+    });
+
+    return cancelButton;
+}
+
+function clearInputContainers() {
+    popUpWindowInputContainer.innerHTML = "";
+    popUpWindowButtonContainer.innerHTML = "";
+}
 
 // ******************
 // REQUEST/LOAD FUNCTIONS
 // ******************
 
-
-
-async function requestChangePassword() {
-    const newPassword = popUpWindow.querySelector("#popup-window-input-1").value;
-    const currentPassword = popUpWindow.querySelector("#popup-window-input-2").value;
+async function requestChangePassword(newPassword, currentPassword) {
 
     const response = await fetch("/api/change-password", {
         method: "PUT",
         body: JSON.stringify({
-            newPassword: newPassword, 
+            newPassword: newPassword,
             currentPassword: currentPassword
         }),
         headers: {
@@ -218,13 +282,16 @@ async function requestChangePassword() {
     }
 }
 
-async function requestChangeName() {
-    const newName = popUpWindow.querySelector("#popup-window-input-1").value;
-    const lastName = popUpWindow.querySelector("#popup-window-input-2").value;
+async function requestChangeName(firstName, lastName) {
+
+    if (!firstName || !lastName) {
+        popupWindowErrorMessage.textContent = "Please enter both first and last name.";
+        return;
+    }
 
     const response = await fetch("/api/change-name", {
         method: "PUT",
-        body: JSON.stringify({firstName: newName, lastName: lastName}),
+        body: JSON.stringify({ firstName: newName, lastName: lastName }),
         headers: {
             "Content-Type": "application/json"
         }
@@ -247,12 +314,12 @@ async function requestDeleteAccount() {
         });
 
         if (response.ok) {
-        popupWindowErrorMessage.textContent = "";
-        hidePopUpWindow();
-        logout();
-    } else {
-        popupWindowErrorMessage.textContent = "Failed to delete account. Please try again.";
-    }
+            popupWindowErrorMessage.textContent = "";
+            hidePopUpWindow();
+            logout();
+        } else {
+            popupWindowErrorMessage.textContent = "Failed to delete account. Please try again.";
+        }
     } catch (error) {
         console.error("Error deleting account:", error);
     }

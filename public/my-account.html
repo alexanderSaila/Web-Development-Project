@@ -43,7 +43,7 @@
             cursor: pointer;
         }
 
-        .interract-button.delete {
+        .delete {
             background-color: rgb(255, 66, 66);
         }
 
@@ -74,6 +74,7 @@
 
             display: flex;
             flex-direction: column;
+            align-items: center;
             min-width: 150px;
             min-height: 100px;
             background-color: white;
@@ -95,17 +96,12 @@
 
         <div id="popup-window" class="popup-window">
 
-            <h3 id="popup-window-header">empty</h3>
+            <h2 id="popup-window-header">empty</h2>
+            <p id="popup-window-description" style="margin-bottom: 1px;">empty</p>
 
-            <section id="popup-window-input-container">
-                <input type="text" id="popup-window-input-1" class="hidden">
-                <input type="text" id="popup-window-input-2" class="hidden">
-            </section>
+            <section id="popup-window-input-container" style="margin: 10px;"></section>
             
-            <section id="popup-window-button-container">
-                <button id="submit-button" class="interract-button">Submit</button>
-                <button id="cancel-button" class="interract-button">Cancel</button>
-            </section>
+            <section id="popup-window-button-container"></section>
 
             <section id="popup-window-request-list">
                 <ul id="request-list">
