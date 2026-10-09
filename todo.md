@@ -16,7 +16,8 @@
 - [ ] Escape i titelfältet för ny lista ska avbryta
 - [ ] Hindra flera "ny lista"-fält samtidigt
 - [ ] Delningsfönstret stängs innan man vet om det lyckades
-- [ ] `flex-wrap: wrap` på `.list-container`, annars åker listor ut ur skärmen
+- [SOLVED] `flex-wrap: wrap` på `.list-container`, annars åker listor ut ur skärmen
+- [ ] Snygga till hur man lägger in titel i list
 
 ## Säkerhet
 - [SOLVED] Cookien `user-id` går att ändra i devtools → kan bli vilken användare som helst, även admin. Byt till sessioner (`express-session`) eller signerade cookies
