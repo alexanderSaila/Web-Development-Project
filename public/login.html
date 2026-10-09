@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
+<head>
+    <title>Welcome - Login & Register</title>
+    <link rel="stylesheet" href="login-registry-style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <head>
-        <title>Welcome - Login & Register</title>
-        <link rel="stylesheet" href="login-registry-style.css">
-    </head>
+</head>
 
 <body>
     <div class="center-box">
@@ -17,14 +18,16 @@
                 <label for="password" class="hidden">Password:</label>
                 <input type="password" id="password" placeholder="password" class="input-field" required>
                 <button type="submit" class="submit-button">Submit</button>
-                <button type="button" class="register-button" onclick="window.location.href='/register.html'">Register</button>
+                <button type="button" class="register-button"
+                    onclick="window.location.href='/register.html'">Register</button>
             </form>
         </section>
     </div>
 
     <footer>
         <p>&copy; 2026 CO-Calendar. All rights reserved.</p>
-        <p>This site uses a single cookie to keep you logged in. It is removed when you log out or after 1 hour of inactivity. No other cookies are used.</p>
+        <p>This site uses a single cookie to keep you logged in. It is removed when you log out or after 1 hour of
+            inactivity. No other cookies are used.</p>
     </footer>
 
     <script>
@@ -43,17 +46,17 @@
                     body: JSON.stringify({ email: email, password: password })
                 });
 
-                if(response.ok){
+                if (response.ok) {
                     const user = await response.json();
                     console.log("User object:", user);
                     localStorage.setItem("firstName", user.firstName);
 
-                    if(user.is_admin) {
+                    if (user.is_admin) {
                         window.location.href = "/admin";
                     } else {
                         window.location.href = "/Calendar.html";
-                    } 
-                } else { 
+                    }
+                } else {
                     const errorData = await response.json();
                     document.getElementById("error-message")?.remove();
                     const errorElement = document.createElement("p");
@@ -66,15 +69,15 @@
                 }
             } catch (error) {
                 console.error("error logging in:", error);
-                    document.getElementById("error-message")?.remove();
-                    const errorElement = document.createElement("p");
-                    errorElement.textContent = error.error || "Login failed. Please try again.";
-                    errorElement.id = "error-message";
-                    errorElement.style.color = "red";
-                    errorElement.setAttribute("role", "alert");
+                document.getElementById("error-message")?.remove();
+                const errorElement = document.createElement("p");
+                errorElement.textContent = error.error || "Login failed. Please try again.";
+                errorElement.id = "error-message";
+                errorElement.style.color = "red";
+                errorElement.setAttribute("role", "alert");
 
-                    document.querySelector(".center-box").appendChild(errorElement);
-                
+                document.querySelector(".center-box").appendChild(errorElement);
+
             }
         }); 
     </script>

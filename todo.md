@@ -19,13 +19,13 @@
 - [ ] `flex-wrap: wrap` på `.list-container`, annars åker listor ut ur skärmen
 
 ## Säkerhet
-- [ ] Cookien `user-id` går att ändra i devtools → kan bli vilken användare som helst, även admin. Byt till sessioner (`express-session`) eller signerade cookies
+- [SOLVED] Cookien `user-id` går att ändra i devtools → kan bli vilken användare som helst, även admin. Byt till sessioner (`express-session`) eller signerade cookies
 - [ ] Sänk max-värdena i rate limiters innan "produktion"
 - [ ] `secure: true` på cookien om sidan någon gång körs över https
 
 ## Städning
 - [ ] Gemensam `base.css` med färgvariabler och input-stil
-- [ ] `<meta>`-taggar in i `<head>`, `<!DOCTYPE>`/`lang`/`charset` på alla sidor
+- [SOLVED] `<meta>`-taggar in i `<head>`, `<!DOCTYPE>`/`lang`/`charset` på alla sidor
 - [ ] Ogiltig CSS: `min-height: 20` utan enhet, `--border-gray: ...;/`, dubbla `#error-message`
 - [ ] `.env.example` och `"dev"`-script i `package.json`
 - [ ] Bestäm: delas listor per användare eller per lista? Anpassa routen `/api/lists/:listId/share` efter det
