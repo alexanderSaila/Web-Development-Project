@@ -55,16 +55,26 @@
                     } 
                 } else { 
                     const errorData = await response.json();
+                    document.getElementById("error-message")?.remove();
                     const errorElement = document.createElement("p");
                     errorElement.textContent = errorData.error || "Login failed. Please try again.";
+                    errorElement.id = "error-message";
                     errorElement.style.color = "red";
                     errorElement.setAttribute("role", "alert");
 
-                    document.getElementById("center-box").appendChild(errorElement);
+                    document.querySelector(".center-box").appendChild(errorElement);
                 }
             } catch (error) {
                 console.error("error logging in:", error);
-                document.getElementById("error-message").textContent = "Network error. Please try again later.";
+                    document.getElementById("error-message")?.remove();
+                    const errorElement = document.createElement("p");
+                    errorElement.textContent = error.error || "Login failed. Please try again.";
+                    errorElement.id = "error-message";
+                    errorElement.style.color = "red";
+                    errorElement.setAttribute("role", "alert");
+
+                    document.querySelector(".center-box").appendChild(errorElement);
+                
             }
         }); 
     </script>
