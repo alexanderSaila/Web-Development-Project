@@ -41,7 +41,7 @@ Copy `.env.example` to `.env` and fill in the values:
 ```bash
 cp .env.example .env
 ```
-
+```bash
 | Variable              | Description 
 |                       |             
 | `PORT`                | Port for the web server (e.g. `3000`) |
@@ -51,7 +51,7 @@ cp .env.example .env
 | `DB_PASSWORD`         | Database password |
 | `DB_NAME`             | Database name (`project_calendar`) |
 | `DB_CONNECTION_LIMIT` | Max connections in the pool (e.g. `5`) |
-
+```
 ### 3. Start the database
 
 ```bash
