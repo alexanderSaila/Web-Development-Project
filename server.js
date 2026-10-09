@@ -23,7 +23,7 @@ const pool = mariadb.createPool({
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cookieParser());
+app.use(cookieParser(process.env.COOKIE_SECRET));
 
 // **********************
 // RATE LIMITERS
@@ -86,7 +86,7 @@ app.post('/logout', (req, res) => {
 // CHECK IF USER IS ADMIN
 // ***********************
 app.get('/admin', async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -108,7 +108,7 @@ app.get('/admin', async (req, res) => {
 // ADMIN PAGE - GET ALL USERS
 // ***********************
 app.get('/admin/users', async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -139,7 +139,7 @@ app.get('/admin/users', async (req, res) => {
 // ADMIN PAGE - DELETE USER
 // ***********************
 app.delete('/admin/users/:userId', async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
     const { userId } = req.params;
 
     if (!loggedInUserId) {
@@ -177,7 +177,7 @@ app.delete('/admin/users/:userId', async (req, res) => {
 // ADMIN PAGE - MAKE USER ADMIN
 // ***********************
 app.put('/admin/users/:userId', async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
     const { userId } = req.params;
     const { is_admin } = req.body;
 
@@ -230,7 +230,7 @@ app.put('/admin/users/:userId', async (req, res) => {
 // ***********************
 
 app.get("/api/share/pending", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -263,7 +263,7 @@ app.get("/api/share/pending", async (req, res) => {
 // ***********************
 
 app.post("/api/lists/share/accept", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -298,7 +298,7 @@ app.post("/api/lists/share/accept", async (req, res) => {
 // ACCEPT TASK SHARE
 // ***********************
 app.post("/api/tasks/share/accept", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -335,7 +335,7 @@ app.post("/api/tasks/share/accept", async (req, res) => {
 // GET TASKS FOR SPECIFIC YEAR AND MONTH
 // **********************
 app.get('/api/tasks/:year/:month', async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
     
     if (!loggedInUserId) {
         console.log("Unauthorized. Please log in.");
@@ -438,6 +438,7 @@ app.post("/api/login", loginLimiter, async (req, res) => {
             httpOnly: true,
             sameSite: "strict",
             maxAge: 3600000,
+            signed: true,
             secure: false 
         });
 
@@ -452,7 +453,7 @@ app.post("/api/login", loginLimiter, async (req, res) => {
 // CHECK USER IS LOGGED IN
 // **********************
 app.get("/api/logged-in", otherLimiter, async(req,res) =>{
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -466,7 +467,7 @@ app.get("/api/logged-in", otherLimiter, async(req,res) =>{
 // CHANGE PASSWORD
 // **********************
 app.put("/api/change-password", otherLimiter, async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
     const { currentPassword, newPassword } = req.body;
 
     if (!loggedInUserId) {
@@ -513,7 +514,7 @@ app.put("/api/change-password", otherLimiter, async (req, res) => {
 // CHANGE NAME
 // **********************
 app.put("/api/change-name", otherLimiter, async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
     const { firstName, lastName } = req.body;
 
     if (!loggedInUserId) {
@@ -538,7 +539,7 @@ app.put("/api/change-name", otherLimiter, async (req, res) => {
 });
 
 app.delete("/api/delete-account", otherLimiter, async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -560,7 +561,7 @@ app.delete("/api/delete-account", otherLimiter, async (req, res) => {
 // SHARE TASKS WITH ANOTHER USER
 // ***********************
 app.post("/api/tasks/share", otherLimiter, async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -619,7 +620,7 @@ app.post("/api/tasks/share", otherLimiter, async (req, res) => {
 // ADD NEW TASK
 // **********************
 app.post("/api/tasks/:year/:month", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
     
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -655,7 +656,7 @@ app.post("/api/tasks/:year/:month", async (req, res) => {
 // DELETE TASK
 // **********************
 app.delete("/api/tasks/:year/:month/:id", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
     
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -684,7 +685,7 @@ app.delete("/api/tasks/:year/:month/:id", async (req, res) => {
 // UPDATE TASK
 // **********************
 app.put("/api/tasks/:id", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -729,7 +730,7 @@ app.put("/api/tasks/:id", async (req, res) => {
 // GET ALL LISTS
 // ***********************
 app.get("/api/lists", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -762,7 +763,7 @@ app.get("/api/lists", async (req, res) => {
 // GET ELEMENTS IN LIST
 // ***********************
 app.get("/api/lists/:listId/elements", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -798,7 +799,7 @@ app.get("/api/lists/:listId/elements", async (req, res) => {
 // ADD LIST
 // ***********************
 app.post("/api/lists", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -826,7 +827,7 @@ app.post("/api/lists", async (req, res) => {
 // DELETE LIST
 // ***********************
 app.delete("/api/lists/:id", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -853,7 +854,7 @@ app.delete("/api/lists/:id", async (req, res) => {
 // UPDATE LIST
 // ***********************
 app.put("/api/lists/:id", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -891,7 +892,7 @@ app.put("/api/lists/:id", async (req, res) => {
 // SHARE LIST WITH ANOTHER USER
 // ***********************
 app.post("/api/lists/share", otherLimiter, async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -946,7 +947,7 @@ app.post("/api/lists/share", otherLimiter, async (req, res) => {
 // ADD ELEMENT TO LIST
 // ***********************
 app.post("/api/lists/:listId/elements", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -988,7 +989,7 @@ app.post("/api/lists/:listId/elements", async (req, res) => {
 // DELETE ELEMENT FROM LIST
 // ***********************
 app.delete("/api/lists/:listId/elements/:elementId", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
@@ -1022,7 +1023,7 @@ app.delete("/api/lists/:listId/elements/:elementId", async (req, res) => {
 // UPDATE ELEMENT IN LIST
 // ***********************
 app.put("/api/lists/:listId/elements/:elementId", async (req, res) => {
-    const loggedInUserId = req.cookies["user-id"];
+    const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
