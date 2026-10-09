@@ -140,7 +140,6 @@ function handleDeleteAccountPopUp() {
 
     const submitButton = standardSubmitButton();
     submitButton.textContent = "Delete Account";
-    submitButton.classList.add("delete");
 
     submitButton.addEventListener("click", async () => {
         await requestDeleteAccount();
@@ -155,7 +154,8 @@ function handleDeleteAccountPopUp() {
 
 async function handleShareRequestsPopUp() {
     clearInputContainers();
-
+    const cancelButton = standardCancelButton();
+    popUpWindowButtonContainer.appendChild(cancelButton);
     const shares = await loadShareRequests();
     shares.forEach((share) => {
         const listItem = document.createElement("li");
@@ -241,6 +241,7 @@ backButton.addEventListener("click", () => {
 function standardCancelButton() {
     const cancelButton = document.createElement("button");
     cancelButton.textContent = "Cancel";
+    cancelButton.classList.add("popup-window-cancel-button");
 
     cancelButton.addEventListener("click", () => {
         hidePopUpWindow();
@@ -252,6 +253,7 @@ function standardCancelButton() {
 function standardSubmitButton() {
     const submitButton = document.createElement("button");
     submitButton.textContent = "Submit";
+    submitButton.classList.add("popup-window-submit-button");
 
     return submitButton;
 }
