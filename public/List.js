@@ -58,13 +58,36 @@ async function loadLists() {
     const lists = await getListsFromBackend();
     const container = emptyList.parentElement;
 
-    lists.forEach(list => {
+    console.log(lists);
+
+    for(list of lists){
         const listBox = createListBox(list);
         container.insertBefore(listBox, emptyList);
-    });
+
+        const elementContainer = await loadListElements(list.id);
+        listBox.append(elementContainer);
+    };
 }
 
 loadLists();
+
+async function loadListElements(listId) {
+    const container = document.createElement("div");
+    container.classList.add("list-element-container");
+
+    const listElements = await getListElementsFromBackend(listId);
+
+    console.log(listElements);
+
+    for(listElement of listElements){
+        const tempElement = document.createElement("li");
+        tempElement.classList.add("list-element");
+        tempElement.textContent = listElement.title;
+
+        container.append(tempElement);
+    }
+    return container;
+}
 
 function createNewList(callerElement) {
     const parent = callerElement.parentElement;
@@ -134,7 +157,23 @@ async function getListsFromBackend() {
     }
 }
 
+async function getListElementsFromBackend(listId) {
+    try {
+        const response = await fetch(`/api/lists/${listId}/elements`, {
+            method: "GET",
+            header: {
+                "Content-Type": "application/json"
+            }
+        });
 
+        if (response.ok) {
+            data = await response.json();
+            return data.elements;
+        }
+    } catch (e) {
+        console.error("Failed to get ListElements from backend", e);
+    }
+}
 
 async function saveListToBackend(title) {
     try {

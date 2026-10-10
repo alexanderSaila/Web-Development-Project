@@ -217,10 +217,26 @@
     align-items: center;
     flex-direction: column;
     width: 250px;
-    min-height: 350px;
+    height: 350px;
     border-radius: 10px;
     border: solid 2px var(--theme-dark);
     margin: 10px;
+    overflow: hidden;
+}
+
+.list-element-container {
+    margin: 15px;
+    padding-left: 15px;
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.list-element {
+    margin: 5px;
 }
 
 .delete-button {

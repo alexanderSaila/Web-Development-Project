@@ -793,7 +793,7 @@ app.get("/api/lists/:listId/elements", async (req, res) => {
             is_checked: Boolean(row.is_checked)
         }));
 
-        res.json(elements);
+        res.status(200).json({elements});
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: "Failed to read list elements from database" });
