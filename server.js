@@ -743,16 +743,18 @@ app.get("/api/lists", async (req, res) => {
     }
 
     const query = `
-        SELECT lID AS id, title, uID AS ownerId
+        SELECT List.lID AS id, List.title, List.uID AS ownerId, User.fName AS owner_name, TRUE AS is_owner
         FROM List
-        WHERE uID = ?
+        JOIN User ON List.uID = User.uID
+        WHERE List.uID = ?
         UNION
-        SELECT List.lID AS id, List.title, List.uID AS ownerId
+        SELECT List.lID AS id, List.title, List.uID AS ownerId, User.fName AS owner_name, FALSE AS is_owner
         FROM List
         JOIN UserSharesList ON List.uID = UserSharesList.sharer_uID
+        JOIN User ON List.uID = User.uID
         WHERE UserSharesList.shared_with_uID = ?
-          AND UserSharesList.is_accepted = TRUE
-    `;
+        AND UserSharesList.is_accepted = TRUE
+`;
 
     try {
         const lists = await pool.query(query, [loggedInUserId, loggedInUserId]);
