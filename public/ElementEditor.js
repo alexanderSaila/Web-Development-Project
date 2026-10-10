@@ -34,20 +34,21 @@ class ElementEditor {
         })
         container.append(editButton);
 
+        //Only add the delete button to Tasks and List-Elements
         if (type == "task" || type == "list-element") {
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "Delete";
             deleteButton.addEventListener("click", async () => {
-                const taskId = element.dataset.id;
-                if (!taskId) {
-                    element.remove();
-                    return;
-                }
-                if (type == "task") {
-                    await this.calendar.deleteTask(taskId, element);
-                }
-                else {
-                    console.log("TYPE ÄR LIST ELEMENT, TA BORT");
+                switch (type) {
+                    case "task": {
+                        const path = `tasks/${this.calendar.getYear()}/${this.calendar.getMonth()}`;
+                        await this.#deleteElement(element, path);
+                        break;
+                    }
+                    case "list-element":{
+                        await this.#deleteElement(element, "lists/elements");
+                        break;
+                    }
                 }
                 window.remove();
             });
@@ -69,6 +70,24 @@ class ElementEditor {
         });
 
         return window;
+    }
+
+    async #deleteElement(element, path) {
+        const elementId = element.dataset.id;
+
+        try {
+            const response = await fetch(`/api/${path}/${elementId}`, {
+                method: "DELETE",
+            });
+
+            if (response.ok) {
+                element.remove();
+                const data = await response.json();
+                console.log(data.message);
+            }
+        } catch (e) {
+            console.log("Error deleting taks", e);
+        }
     }
 
     async #edit(element, editedText, path) {

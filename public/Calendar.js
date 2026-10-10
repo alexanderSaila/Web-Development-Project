@@ -116,6 +116,14 @@ class Calendar {
         calendarHeader.textContent = Calendar.monthNames[month] + " " + this.selectedDate.getFullYear();;
     }
 
+    getYear(){
+        return this.selectedDate.getFullYear();
+    }
+
+    getMonth(){
+        return this.selectedDate.getMonth() + 1;
+    }
+
     #createDayNode(dayName, dayNumber, month, isEmpty) {
         const daySection = document.createElement("section");
         daySection.setAttribute("id", `${this.selectedDate.getFullYear()}-${String(month).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`);
@@ -190,25 +198,6 @@ class Calendar {
             }
         } catch (e) {
             console.log("Failed to save task: ", e);
-        }
-    }
-
-    async deleteTask(id, element) {
-        const year = this.selectedDate.getFullYear();
-        const month = this.selectedDate.getMonth() + 1;
-
-        try {
-            const response = await fetch(`/api/tasks/${year}/${month}/${id}`, {
-                method: "DELETE",
-            });
-
-            if (response.ok) {
-                element.remove();
-                const data = await response.json();
-                console.log(data.message);
-            }
-        } catch (e) {
-            console.log("Error deleting taks", e);
         }
     }
 
