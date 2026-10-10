@@ -72,7 +72,7 @@ app.post('/logout', (req, res) => {
     res.clearCookie("user-id", {
         httpOnly: true,
         sameSite: "strict",
-        secure: true
+        secure: false
     });
     res.status(200).json({ message: "Logged out successfully" });
 });
