@@ -783,7 +783,7 @@ app.get("/api/lists/:listId/elements", async (req, res) => {
         }
 
         const result = await pool.query(
-            "SELECT leID AS id, title, description, is_checked FROM ListElement WHERE lID = ? ORDER BY leID",
+            "SELECT leID AS id, title, is_checked FROM ListElement WHERE lID = ? ORDER BY leID",
             [listId]
         );
 
@@ -973,7 +973,7 @@ app.post("/api/lists/:listId/elements", async (req, res) => {
         }
 
         const result = await pool.query(
-            "INSERT INTO ListElement (title, description, lID) VALUES (?, ?, ?)",
+            "INSERT INTO ListElement (title, lID) VALUES (?, ?, ?)",
             [title.trim(), description.trim(), listId]
         );
 
@@ -1048,7 +1048,7 @@ app.put("/api/lists/:listId/elements/:elementId", async (req, res) => {
         }
 
         const result = await pool.query(
-            "UPDATE ListElement SET title = ?, description = ?, is_checked = ? WHERE leID = ? AND lID = ?",
+            "UPDATE ListElement SET title = ?, is_checked = ? WHERE leID = ? AND lID = ?",
             [title.trim(), description.trim(), is_checked, elementId, listId]
         );
 
