@@ -149,7 +149,6 @@ class Calendar {
             if (!result.ok) return;
 
             const tasks = await result.json();
-            console.log(tasks);
             for (const task of tasks) {
 
                 const daySection = document.getElementById(task.task_date);
@@ -333,8 +332,6 @@ class Calendar {
 
             const editField = this.#createEditTaskField(task, window);
             content.insertBefore(editField, editButton);
-
-            console.log("ADDED EDIT FIELD");
 
             editButton.style.display = "none";
             editField.focus();
