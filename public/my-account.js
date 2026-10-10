@@ -299,7 +299,7 @@ async function requestChangeName(firstName, lastName) {
 
     const response = await fetch("/api/change-name", {
         method: "PUT",
-        body: JSON.stringify({ firstName: newName, lastName: lastName }),
+        body: JSON.stringify({ firstName, lastName }),
         headers: {
             "Content-Type": "application/json"
         }
