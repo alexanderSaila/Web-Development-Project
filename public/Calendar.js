@@ -104,12 +104,12 @@ class Calendar {
             }
             this.weekContainer.append(currentWeekDiv);
         }
+        this.#loadTasks();
     }
 
     #displayCalendarName(month) {
         const calendarHeader = document.getElementById("month-name");
         calendarHeader.textContent = Calendar.monthNames[month] + " " + this.selectedDate.getFullYear();;
-        this.#loadTasks();
     }
 
     #createDayNode(dayName, dayNumber, month, isEmpty) {
