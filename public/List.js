@@ -24,42 +24,53 @@ else {
     console.log("NO BUTTON FOUND");
 }
 
-function createListBox(list) {
+function createListBox(list, isOwner) {
     const listBox = document.createElement("div");
     listBox.classList.add("list-box");
     listBox.id = `list-${list.id}`;
+
+    const titleDiv = document.createElement("div");
+    titleDiv.classList.add("list-title-container");
 
     const titleElement = document.createElement("h4");
     titleElement.classList.add("list-title");
     titleElement.textContent = list.title;
     titleElement.dataset.id = list.id;
-    titleElement.addEventListener("click", (e) => {
-        e.stopPropagation();
 
-        const editTaskWindow = document.getElementById("edit-list-window");
-        const optionWindow = elementEditor.createOptionWindow(titleElement, "list-title");
+    if (isOwner) {
+        titleElement.classList.add("interrractable");
+        titleElement.addEventListener("click", (e) => {
+            e.stopPropagation();
 
-        editTaskWindow.append(optionWindow);
-    })
+            const editTaskWindow = document.getElementById("edit-list-window");
+            const optionWindow = elementEditor.createOptionWindow(titleElement, "list-title");
 
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "X";
-    deleteButton.classList.add("delete-button");
-    deleteButton.addEventListener("click", async () => {
-        const confirmed = confirm(`Are you sure you want to delete the list "${list.title}"?`);
-        if (confirmed) {
-            const success = await deleteListFromBackend(list.id);
-            if (success) {
-                listBox.remove();
-            } else {
-                alert("Failed to delete the list. Please try again.");
+            editTaskWindow.append(optionWindow);
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "X";
+        deleteButton.classList.add("delete-button");
+        deleteButton.addEventListener("click", async () => {
+            const confirmed = confirm(`Are you sure you want to delete the list "${list.title}"?`);
+            if (confirmed) {
+                const success = await deleteListFromBackend(list.id);
+                if (success) {
+                    listBox.remove();
+                } else {
+                    alert("Failed to delete the list. Please try again.");
+                }
             }
-        }
-    });
-    const titleDiv = document.createElement("div");
-    titleDiv.classList.add("list-title-container");
+        });
+        titleDiv.appendChild(deleteButton);
+    } else {
+        const ownerName = document.createElement("p");
+        ownerName.textContent = `(${list.owner_name})`;
+        ownerName.classList.add("list-owner");
+        titleDiv.append(ownerName);
+    }
+
     titleDiv.appendChild(titleElement);
-    titleDiv.appendChild(deleteButton);
 
     listBox.appendChild(titleDiv);
     return listBox;
@@ -72,16 +83,16 @@ async function loadLists() {
     console.log(lists);
 
     for (list of lists) {
-        const listBox = createListBox(list);
+        const listBox = createListBox(list, list.is_owner);
         container.insertBefore(listBox, emptyList);
 
         // read in all list elements in a div container and append it to the listBox
-        const elementContainer = await loadListElements(list.id);
+        const elementContainer = await loadListElements(list.id, list.is_owner);
         listBox.append(elementContainer);
     };
 }
 
-async function loadListElements(listId) {
+async function loadListElements(listId, isOwner) {
     const container = document.createElement("div");
     container.classList.add("list-element-container");
 
@@ -96,15 +107,17 @@ async function loadListElements(listId) {
         tempElement.textContent = listElement.title;
         tempElement.dataset.id = listElement.id;
 
-        tempElement.addEventListener("click", (e) => {
-            e.stopPropagation();
+        if (isOwner) {
+            tempElement.classList.add("interractable");
+            tempElement.addEventListener("click", (e) => {
+                e.stopPropagation();
 
-            const editTaskWindow = document.getElementById("edit-list-window");
-            const optionWindow = elementEditor.createOptionWindow(tempElement, "list-element");
+                const editTaskWindow = document.getElementById("edit-list-window");
+                const optionWindow = elementEditor.createOptionWindow(tempElement, "list-element");
 
-            editTaskWindow.append(optionWindow);
-        })
-
+                editTaskWindow.append(optionWindow);
+            });
+        }
         container.append(tempElement);
     }
     return container;
@@ -190,7 +203,7 @@ async function getListElementsFromBackend(listId) {
         });
 
         if (response.ok) {
-            data = await response.json();
+            const data = await response.json();
             return data.elements;
         }
     } catch (e) {
