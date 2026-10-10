@@ -32,6 +32,7 @@ function createListBox(list) {
     const titleElement = document.createElement("h4");
     titleElement.classList.add("list-title");
     titleElement.textContent = list.title;
+    titleElement.dataset.id = list.id;
 
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "X";
@@ -85,6 +86,7 @@ async function loadListElements(listId) {
         const tempElement = document.createElement("li");
         tempElement.classList.add("list-element");
         tempElement.textContent = listElement.title;
+        tempElement.dataset.id = listElement.id;
 
         tempElement.addEventListener("click", (e) => {
             e.stopPropagation();
