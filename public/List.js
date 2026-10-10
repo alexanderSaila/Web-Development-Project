@@ -62,11 +62,17 @@ function createListBox(list, isOwner) {
                 }
             }
         });
+        
         titleDiv.appendChild(deleteButton);
+
     } else {
+        titleDiv.classList.add("not-owned");
+        listBox.classList.add("not-owned");
+
         const ownerName = document.createElement("p");
         ownerName.textContent = `(${list.owner_name})`;
         ownerName.classList.add("list-owner");
+
         titleDiv.append(ownerName);
     }
 

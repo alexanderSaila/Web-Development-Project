@@ -218,9 +218,25 @@
     width: 250px;
     height: 350px;
     border-radius: 10px;
-    border: solid 2px var(--theme-dark);
+    border: solid var(--theme-dark);
     margin: 10px;
     overflow: hidden;
+}
+
+.list-box.empty {
+    border: dashed 1px gray;
+    background-color: rgb(236, 236, 236);
+    justify-content: center;
+    align-items: center;
+}
+
+.list-box.highlight {
+    background-color: rgb(197, 255, 174);
+}
+
+.list-box.not-owned{
+    border: solid gray;
+    border-color: gray;
 }
 
 .list-element-container {
@@ -257,17 +273,6 @@
     border-radius: 5px;
 }
 
-.list-box.empty {
-    border: dashed 1px gray;
-    background-color: rgb(236, 236, 236);
-    justify-content: center;
-    align-items: center;
-}
-
-.list-box.highlight {
-    background-color: rgb(197, 255, 174);
-}
-
 .list-title-container {
     position: relative;
     height: 50px;
@@ -275,7 +280,12 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    border-bottom: solid 2px var(--theme-dark);
+    border-bottom: dashed var(--theme-dark);
+}
+
+.list-title-container.not-owned{
+    border-bottom: dashed gray;
+    border-color: gray;
 }
 
 .list-title {
