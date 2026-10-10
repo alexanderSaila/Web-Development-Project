@@ -3,6 +3,8 @@ const emptyList = document.getElementById("empty-list");
 emptyList.classList.add("empty");
 const createNewListButton = document.getElementById("create-new-list-button");
 
+const elementEditor = new ElementEditor();
+
 if (createNewListButton) {
     const parent = createNewListButton.parentElement;
 
@@ -64,12 +66,11 @@ async function loadLists() {
         const listBox = createListBox(list);
         container.insertBefore(listBox, emptyList);
 
+        // read in all list elements in a div container and append it to the listBox
         const elementContainer = await loadListElements(list.id);
         listBox.append(elementContainer);
     };
 }
-
-loadLists();
 
 async function loadListElements(listId) {
     const container = document.createElement("div");
@@ -79,10 +80,20 @@ async function loadListElements(listId) {
 
     console.log(listElements);
 
+    // apply all properties to each list elements, possibly move this to a separate function
     for(listElement of listElements){
         const tempElement = document.createElement("li");
         tempElement.classList.add("list-element");
         tempElement.textContent = listElement.title;
+
+        tempElement.addEventListener("click", (e) => {
+            e.stopPropagation();
+
+            const editTaskWindow = document.getElementById("edit-list-window");
+            const optionWindow = elementEditor.createOptionWindow(tempElement, "list-element");
+
+            editTaskWindow.append(optionWindow);
+        })
 
         container.append(tempElement);
     }
@@ -220,3 +231,5 @@ async function deleteListFromBackend(listId) {
 function updateListInBackend(listId, newTitle) {
     // Här kan du implementera logik för att uppdatera listan i backend
 }
+
+loadLists();

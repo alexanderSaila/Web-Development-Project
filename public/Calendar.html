@@ -5,6 +5,7 @@
     <title>CO-CALENDAR</title>
     <link rel="stylesheet" href="calendar-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="ElementEditor.js" defer></script>
     <script src="Calendar.js" defer></script>
     <script src="UserNavigationHandler.js" defer></script>
     <script src="List.js" defer></script>
@@ -54,11 +55,17 @@
 
     <section id="list-section" class="section">
         <h3 class="section-title">Lists</h3>
+
+
         <div class="list-container">
             <div id="empty-list" class="list-box">
                 <button id="create-new-list-button" class="create-new-list-button">Create New List</button>
             </div>
         </div>
+
+
+        <div id="edit-list-window">
+            </div>
     </section>
 
     <footer>

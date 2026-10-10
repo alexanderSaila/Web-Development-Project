@@ -25,6 +25,8 @@ class Calendar {
     previousMonthButton = null;
     nextMonthButton = null;
 
+    elementEditor = null;
+
     constructor() {
 
         this.selectedDate = new Date();
@@ -43,6 +45,8 @@ class Calendar {
             this.selectedDate.setMonth(this.selectedDate.getMonth() + 1);
             this.#displayMonth();
         });
+
+        this.elementEditor = new ElementEditor(this);
 
         this.#displayMonth();
     }
@@ -189,7 +193,7 @@ class Calendar {
         }
     }
 
-    async #deleteTask(id, element) {
+    async deleteTask(id, element) {
         const year = this.selectedDate.getFullYear();
         const month = this.selectedDate.getMonth() + 1;
 
@@ -295,112 +299,15 @@ class Calendar {
             finishedTask.addEventListener("click", async (e) => {
                 e.stopPropagation();
 
-                const editTaskWindow = document.getElementById("edit-task-window");
-                const optionWindow = this.#createOptionWindow(finishedTask);
+                const editWindow = document.getElementById("edit-task-window");
+                const optionWindow = this.elementEditor.createOptionWindow(finishedTask, "task");
 
-                editTaskWindow.append(optionWindow);
+                editWindow.append(optionWindow);
 
             });
         }
 
         return finishedTask;
-    }
-
-    #createOptionWindow(task) {
-        const window = document.createElement("div");
-        window.classList.add("task-option-window");
-
-        const content = document.createElement("div");
-        content.classList.add("task-option-content");
-
-        const taskLocation = task.getBoundingClientRect();
-
-        content.style.left = `${taskLocation.left}px`;
-        content.style.top = `${taskLocation.bottom + 5}px`;
-
-        const editButton = document.createElement("button");
-        const deleteButton = document.createElement("button");
-        const exitButton = document.createElement("button");
-
-
-        editButton.textContent = "Edit";
-        deleteButton.textContent = "Delete";
-        exitButton.textContent = "Exit";
-
-        editButton.addEventListener("click", (e) => {
-            e.stopPropagation();
-
-            const editField = this.#createEditTaskField(task, window);
-            content.insertBefore(editField, editButton);
-
-            editButton.style.display = "none";
-            editField.focus();
-        })
-
-        deleteButton.addEventListener("click", async () => {
-            const taskId = task.dataset.id;
-            if (!taskId) {
-                task.remove();
-                return;
-            }
-            await this.#deleteTask(taskId, task);
-            window.remove();
-        });
-
-        exitButton.addEventListener("click", () => {
-            window.remove();
-        });
-
-        window.addEventListener("click", (e) => {
-            if (e.target === window) {
-                window.remove();
-            }
-        });
-
-        content.append(editButton);
-        content.append(deleteButton);
-        content.append(exitButton);
-        window.append(content);
-
-        return window;
-    }
-
-    #createEditTaskField(task, optionWindow) {
-        const editField = document.createElement("input");
-        editField.classList.add("input-field");
-        editField.value = task.textContent;
-
-        editField.addEventListener("keydown", async (e) => {
-            if (e.key === "Enter") {
-                //const userId = sessionStorage.getItem("loggedInUserId");
-                const editedText = editField.value.trim();
-                if (!editedText) {
-                    console.error("Task title cannot be empty.");
-                    return;
-                }
-                try {
-                    const response = await fetch(`/api/tasks/${task.dataset.id}`, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            //"user-id": userId
-                        },
-                        body: JSON.stringify({ title: editedText })
-                    });
-
-                    if (response.ok) {
-                        task.textContent = editedText;
-                        if (optionWindow) optionWindow.remove();
-                    }
-                } catch (err) {
-                    console.error("Failed to edit task:", err);
-                }
-            } else if (e.key === "Escape") {
-                if (optionWindow) optionWindow.remove();
-            }
-        });
-
-        return editField;
     }
 }
 

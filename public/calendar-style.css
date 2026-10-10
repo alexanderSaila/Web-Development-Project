@@ -239,6 +239,10 @@
     margin: 5px;
 }
 
+.list-element:hover {
+    cursor: pointer;
+}
+
 .delete-button {
     position: absolute;
     right: 8px;
