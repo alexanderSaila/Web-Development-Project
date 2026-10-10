@@ -33,6 +33,14 @@ function createListBox(list) {
     titleElement.classList.add("list-title");
     titleElement.textContent = list.title;
     titleElement.dataset.id = list.id;
+    titleElement.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        const editTaskWindow = document.getElementById("edit-list-window");
+        const optionWindow = elementEditor.createOptionWindow(titleElement, "list-title");
+
+        editTaskWindow.append(optionWindow);
+    })
 
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "X";
@@ -63,7 +71,7 @@ async function loadLists() {
 
     console.log(lists);
 
-    for(list of lists){
+    for (list of lists) {
         const listBox = createListBox(list);
         container.insertBefore(listBox, emptyList);
 
@@ -82,7 +90,7 @@ async function loadListElements(listId) {
     console.log(listElements);
 
     // apply all properties to each list elements, possibly move this to a separate function
-    for(listElement of listElements){
+    for (listElement of listElements) {
         const tempElement = document.createElement("li");
         tempElement.classList.add("list-element");
         tempElement.textContent = listElement.title;
