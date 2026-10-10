@@ -238,8 +238,4 @@ async function deleteListFromBackend(listId) {
     }
 }
 
-function updateListInBackend(listId, newTitle) {
-    // Här kan du implementera logik för att uppdatera listan i backend
-}
-
 loadLists();

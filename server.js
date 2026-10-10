@@ -887,7 +887,9 @@ app.put("/api/lists/:id", async (req, res) => {
             id: id,
             title: title.trim()
         };
+
         res.json(updatedList);
+
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: "Failed to update list in database" });
@@ -994,23 +996,20 @@ app.post("/api/lists/:listId/elements", async (req, res) => {
 // ***********************
 // DELETE ELEMENT FROM LIST
 // ***********************
-app.delete("/api/lists/:listId/elements/:elementId", async (req, res) => {
+app.delete("/api/lists/elements/:elementId", async (req, res) => {
     const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
     }
 
-    try {
-        const { listId, elementId } = req.params;
+    const { elementId } = req.params;
 
-        if (!(await canAccessList(listId, loggedInUserId))) {
-            return res.status(404).json({ error: "List not found or not authorized to user" });
-        }
+    try {
 
         const result = await pool.query(
-            "DELETE FROM ListElement WHERE leID = ? AND lID = ?",
-            [elementId, listId]
+            "DELETE FROM ListElement WHERE leID = ?",
+            [elementId]
         );
 
         if (result.affectedRows === 0) {
@@ -1028,28 +1027,25 @@ app.delete("/api/lists/:listId/elements/:elementId", async (req, res) => {
 // ***********************
 // UPDATE ELEMENT IN LIST
 // ***********************
-app.put("/api/lists/:listId/elements/:elementId", async (req, res) => {
+app.put("/api/lists/elements/:elementId", async (req, res) => {
     const loggedInUserId = req.signedCookies["user-id"];
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: "Unauthorized. Please log in." });
     }
 
-    const { listId, elementId } = req.params;
-    const { title, description, is_checked } = req.body;
+    const { elementId } = req.params;
+    const { title } = req.body;
 
-    if (!title || !description || typeof is_checked !== 'boolean') {
-        return res.status(400).json({ error: 'title, description and is_checked (boolean) required' });
+    if (!title) {
+        return res.status(400).json({ error: 'title required' });
     }
 
     try {
-        if (!(await canAccessList(listId, loggedInUserId))) {
-            return res.status(404).json({ error: "List not found or not authorized to user" });
-        }
 
         const result = await pool.query(
-            "UPDATE ListElement SET title = ?, is_checked = ? WHERE leID = ? AND lID = ?",
-            [title.trim(), description.trim(), is_checked, elementId, listId]
+            "UPDATE ListElement SET title = ? WHERE leID = ?",
+            [title.trim(), elementId]
         );
 
         if (result.affectedRows === 0) {
@@ -1058,10 +1054,9 @@ app.put("/api/lists/:listId/elements/:elementId", async (req, res) => {
 
         const updatedElement = {
             id: elementId,
-            title: title.trim(),
-            description: description.trim(),
-            is_checked: is_checked
+            title: title.trim()
         };
+
         res.json(updatedElement);
     } catch (e) {
         console.error(e);

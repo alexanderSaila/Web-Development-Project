@@ -71,12 +71,15 @@ class ElementEditor {
         return window;
     }
 
-    async #editTask(element, editedText) {
+    async #edit(element, editedText, path) {
+        const elementId = element.dataset.id;
+        console.log(elementId);
+
         try {
-            const response = await fetch(`/api/tasks/${element.dataset.id}`, {
+            const response = await fetch(`/api/${path}/${elementId}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ title: editedText })
             });
@@ -85,19 +88,9 @@ class ElementEditor {
                 element.textContent = editedText;
                 return true;
             }
-        } catch (err) {
-            console.error("Failed to edit", err);
+        } catch (e) {
+            console.error("Failed to edit", e);
         }
-        return false;
-    }
-
-    async #editListTitle(element, editedText) {
-        console.log("WE UPDATE TITLE OF LIST");
-        return false;
-    }
-
-    async #editListElement(element, editedText) {
-        console.log("WE UPDATE LIST ELEMENT");
         return false;
     }
 
@@ -123,19 +116,19 @@ class ElementEditor {
 
                 switch (type) {
                     case "task": {
-                        if(this.#editTask(element, editedText)){
+                        if (await this.#edit(element, editedText, "tasks")) {
                             optionWindow.remove();
                         }
                         break;
                     }
                     case "list-title": {
-                        if(this.#editListTitle(element, editedText)){
+                        if (await this.#edit(element, editedText, "lists")) {
                             optionWindow.remove();
                         }
                         break;
                     }
                     case "list-element": {
-                        if(this.#editListElement(element, editedText)){
+                        if (await this.#edit(element, editedText, "lists/elements")) {
                             optionWindow.remove();
                         }
                         break;
@@ -150,5 +143,5 @@ class ElementEditor {
         return editField;
     }
 
-    
+
 }
