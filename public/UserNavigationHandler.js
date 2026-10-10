@@ -10,7 +10,6 @@ class UserNavigationHandler {
     myAccountButton = null;
 
     constructor() {
-        this.checkLoggedIn();
 
         this.myAccountButton = document.getElementById("account-button");
         this.myAccountButton.addEventListener("click", () => {
@@ -92,19 +91,6 @@ class UserNavigationHandler {
             } catch (e) {
                 console.error("Failed to share:", e);
             }
-        }
-    }
-
-    async checkLoggedIn() {
-        try {
-            const response = await fetch("api/logged-in", {
-                method: "GET"
-            });
-            if (response.status === 401) {
-                window.location.href = "/login.html"
-            }
-        } catch (e) {
-            console.error("Not logged in", e);
         }
     }
 
