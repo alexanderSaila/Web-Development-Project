@@ -127,6 +127,8 @@ function createNewList(callerElement) {
     const titleInput = document.createElement("input");
     titleInput.type = "text";
     titleInput.placeholder = "Enter list title";
+    titleInput.style.marginTop = "20px";
+    titleInput.style.textAlign = "center";
 
     console.log("Created new list input field", titleInput);
 
