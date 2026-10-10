@@ -225,21 +225,25 @@
 
 .list-element-container {
     margin: 15px;
-    padding-left: 15px;
     display: flex;
     flex-direction: column;
-    width: 90%;
+    width: 95%;
     overflow-y: auto;
     flex: 1;
     min-height: 0;
 }
 
 .list-element {
-    margin: 5px;
+    margin: 4px;
+    padding-left: 5px;
+    list-style-position: inside;
 }
 
 .list-element:hover {
     cursor: pointer;
+    background-color: #dfdfdf;
+    border-radius: 2px;
+    box-shadow: 0 2px 2px black;
 }
 
 .delete-button {
@@ -277,6 +281,10 @@
 .list-title {
     text-align: center;
     margin:0;
+}
+
+.list-title:hover{
+    cursor: pointer;
 }
 
 .create-new-list-button {
