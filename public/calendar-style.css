@@ -213,7 +213,6 @@
 .list-box {
     position: relative;
     display: flex;
-    justify-content: flex-start;
     align-items: center;
     flex-direction: column;
     width: 250px;
@@ -246,7 +245,7 @@
 .delete-button {
     position: absolute;
     right: 8px;
-    top: 50%;
+    top: 8%;
     transform: translateY(-50%);
     background-color: lightcoral;
     border: solid 2px darkred;
@@ -256,7 +255,10 @@
 }
 
 .list-title-container {
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
     width: 100%;
     border-bottom: solid 2px var(--theme-dark);
 }
@@ -275,7 +277,6 @@
 .list-title {
     text-align: center;
     margin:0;
-    padding: 12px 60px
 }
 
 .create-new-list-button {
